@@ -7,6 +7,7 @@ import (
 	"gigdubservice/app/domain/base"
 	"errors"
 	"log"
+	"gigdubservice/app/datastore"
 )
 
 
@@ -43,6 +44,13 @@ func (c Rest) Get(domain string, resource string) revel.Result {
 	}
 
 	return c.RenderJSON(data);
+}
+
+func (c Rest) Post(domain string) revel.Result {
+	model := base.Model{}
+	model.Datastore = datastore.Mongo{}
+	model.Domain = domain
+
 }
 
 func Generate(domainService string) (base.ServiceContract, error) {
