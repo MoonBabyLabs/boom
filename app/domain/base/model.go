@@ -1,33 +1,50 @@
 package base
 
-import "gigdubservice/app/datastore"
+import "gigdub/app/datastore"
 
 type ModelContract interface {
 }
 
-type DataStoreContract interface {
-	Init(dbName string, dbConnection string, domain string) DataStoreContract
-	Connect(connection string, dbName string) DataStoreContract
-	Find(model Model) Model
-	Insert(model Model) Model
+type EntityContract interface {
+
 }
+
+type Entities map[string] interface{}
 
 type Model struct {
-	Datastore DataStoreContract
+	Datastore datastore.Contract
 	ResourceFinder datastore.ResourceFinder
 	Domain string
-	Entities []struct{}
+	Entities Entities
 }
 
-func (m Model) init(datastore DataStoreContract, resourceFinder datastore.ResourceFinder) Model {
+func (m Model) init(datastore datastore.Contract, resourceFinder datastore.ResourceFinder) Model {
 	active := Model{Datastore:datastore, ResourceFinder:resourceFinder}
-	m.Datastore = datastore.Init()
+	m.Datastore = datastore
 
 	return active
 }
 
-func (m Model) find() []struct{} {
-	m.Datastore.Find(m)
+func (m Model) Find(resource interface{}) Entities {
+	m.Datastore.Find(resource)
 
 	return m.Entities
+}
+
+func (m Model) GetDomain() string {
+	return m.Domain
+}
+
+func (m Model) SetDomain(domain string) Model {
+	m.Domain = domain
+
+	return m
+}
+
+func (m Model) Add(items ...interface{}) bool {
+	if m.Datastore.Insert(items) {
+		return true
+	}
+
+	return false
 }

@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"github.com/revel/revel"
-	"gigdubservice/app/domain/job"
-	"gigdubservice/app/factory"
-	"gigdubservice/app/domain/base"
+	"gigdub/app/domain/job"
+	"gigdub/app/factory"
+	"gigdub/app/domain/base"
 	"errors"
 	"log"
-	"gigdubservice/app/datastore"
+	"gigdub/app/provider"
+	"encoding/json"
+	"io/ioutil"
 )
 
 
@@ -48,9 +50,16 @@ func (c Rest) Get(domain string, resource string) revel.Result {
 
 func (c Rest) Post(domain string) revel.Result {
 	model := base.Model{}
-	model.Datastore = datastore.Mongo{}
+	item := make(map[string]interface{})
+	content, _ := ioutil.ReadAll(c.Request.Body)
+	json.Unmarshal([]byte(content), item)
 	model.Domain = domain
+	model.Datastore = provider.Db{}.Construct()
+	model.Datastore.SetDomain(domain)
+	model.Domain = domain
+	model.Add(item)
 
+	return c.RenderJSON(item)
 }
 
 func Generate(domainService string) (base.ServiceContract, error) {
@@ -60,5 +69,4 @@ func Generate(domainService string) (base.ServiceContract, error) {
 	default:
 		return nil, errors.New("Could not find domain item")
 	}
-
 }

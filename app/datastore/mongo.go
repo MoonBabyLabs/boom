@@ -2,14 +2,13 @@ package datastore
 
 import (
 	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
-	"gigdubservice/app/domain/base"
 	"log"
 )
 
 type Mongo struct {
 	Db *mgo.Database
 	Session  interface{}
+	Domain string
 }
 
 type SessionContract interface {
@@ -20,19 +19,20 @@ type DatabaseContract interface {
 
 }
 
-func (st Mongo) Init(dbName string, dbConnection string, domain string) base.DataStoreContract {
+func (st Mongo) Init(dbName string, dbConnection string) Contract {
 	m := Mongo{}
 	m.Session = m.Connect(dbConnection, dbConnection)
 
 	return m
 }
 
-func (st Mongo) Connect(connection string, dbName string) base.DataStoreContract {
-	session, err := mgo.Dial(connection)
+func (st Mongo) Connect(connectionName string, dbName string) Contract {
+	log.Print(connectionName)
+	session, err := mgo.Dial("127.0.0.1:27017")
 	st.Session = session
 
 	if err != nil {
-		log.Fatal("Could not connect to MongoDB")
+		log.Fatal(err)
 	}
 
 	st.Db = session.DB(dbName)
@@ -40,29 +40,41 @@ func (st Mongo) Connect(connection string, dbName string) base.DataStoreContract
 	return st
 }
 
+func (st Mongo) SetDomain (domain string) Contract {
+	st.Domain = domain
 
-func (m Mongo) find(model base.Model) base.Model {
-	c := m.Db.C(model.Domain)
-	err  := c.Find(bson.M{model.ResourceFinder.Key : model.ResourceFinder.Value}).One(&model.Entities)
+	return st
+}
+
+func (st Mongo) GetDomain () string {
+	return st.Domain
+}
+
+func (m Mongo) Insert(resources ...interface{}) bool {
+	c := m.Db.C(m.Domain).Create()
+	err := c.Insert(resources)
 
 	if err != nil {
-		log.Panic("Could not find data value")
+		log.Panic(err)
+
+		return false
 	}
 
-	return model
+	return true
 }
 
-func (m Mongo) insert(model base.Model) base.Model {
-	c := m.Db.C(model.Domain)
+func (m Mongo) Find(resource interface{}) map[string]interface{} {
+	c := m.Db.C(m.Domain)
+	items := make(map[string]interface{})
+	err  := c.Find(resource).All(&items)
 
-	for _, element := range base.Model.Entities {
-		err := c.Insert(element)
+	if err != nil {
+		log.Panic(err)
 
-		if err != nil {
-			log.Panic("Could not insert into DB")
-		}
-
+		return items
 	}
 
-	return model
+	return items
 }
+
+

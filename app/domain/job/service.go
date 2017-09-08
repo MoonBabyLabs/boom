@@ -1,7 +1,7 @@
 package job
 
 import (
-	"gigdubservice/app/domain/base"
+	"gigdub/app/domain/base"
 	"log"
 	"reflect"
 )
