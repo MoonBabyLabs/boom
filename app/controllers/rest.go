@@ -39,11 +39,11 @@ func (c Rest) Get(domain string, resource string) revel.Result {
 
 	if err==nil  {
 		return c.RenderJSON(newData)
-	} else {
-		data["error"] = err
-		data["sucess"] = "false"
-		log.Panic(err)
 	}
+
+	data["error"] = err
+	data["sucess"] = "false"
+	log.Panic(err)
 
 	return c.RenderJSON(data);
 }
