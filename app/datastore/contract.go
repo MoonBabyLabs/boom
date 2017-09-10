@@ -7,8 +7,10 @@ type ItemContract interface {
 type Contract interface {
 	Init(dbName string, dbConnection string) Contract
 	Connect(connectionName string, dbName string) Contract
-	Find(resource interface{}) map[string]interface{}
-	Insert(resource ...interface{}) bool
+	Find(collection string, resource int) map[string]interface{}
+	Insert(collection string, resource map[string]interface{}) bool
 	SetDomain(domain string) Contract
 	GetDomain() string
+	All(collection string) []map[string]interface{}
+	Update(collection string, resource string, content map[string]interface{}, patch bool) bool
 }

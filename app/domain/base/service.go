@@ -7,5 +7,7 @@ type Service struct {
 
 
 func (s Service) Get (resource string) ModelContract {
+	m := Model{}
 
+	return m
 }

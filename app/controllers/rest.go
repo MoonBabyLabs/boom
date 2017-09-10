@@ -2,14 +2,10 @@ package controllers
 
 import (
 	"github.com/revel/revel"
-	"gigdub/app/domain/job"
-	"gigdub/app/factory"
-	"gigdub/app/domain/base"
-	"errors"
+	"github.com/MoonBabyLabs/boom/app/domain/base"
 	"log"
-	"gigdub/app/provider"
-	"encoding/json"
-	"io/ioutil"
+	"github.com/MoonBabyLabs/boom/app/provider"
+	"strconv"
 )
 
 
@@ -21,52 +17,62 @@ type DataResponse struct {
 	id int
 }
 
-type FactoryGenerator struct {
-	service []factory.ServiceContract
-}
-
-type JobService struct {
-	*job.Service
-}
-
-
 func (c Rest) Get(domain string, resource string) revel.Result {
 	data := make(map[string]interface{})
-	service, err := Generate(domain)
-	newData := service.Get(resource)
-	data["data"] = newData
-	log.Print(newData)
-
-	if err==nil  {
-		return c.RenderJSON(newData)
-	}
-
+	model := base.Model{}
+	model.Domain = domain
+	model.Datastore = provider.Db{}.Construct()
+	i, err := strconv.Atoi(resource)
+	data["data"] = model.Find(i)
 	data["error"] = err
-	data["sucess"] = "false"
-	log.Panic(err)
+	data["sucess"] = false
 
-	return c.RenderJSON(data);
+	return c.RenderJSON(data)
+}
+
+func (c Rest) Patch(domain string, resource string) revel.Result {
+	model := base.Model{}
+	item := make(map[string]interface{})
+	c.Params.BindJSON(&item)
+	log.Print(item)
+	model.Domain = domain
+	model.Datastore = provider.Db{}.Construct()
+	model.Update(resource, item, true)
+	data := make(map[string]interface{})
+	data["success"] = true
+
+	return c.RenderJSON(data)
+}
+
+func (c Rest) PUT(domain string, resource string) revel.Result {
+	model := base.Model{}
+	item := make(map[string]interface{})
+	c.Params.BindJSON(&item)
+	model.Domain = domain
+	model.Datastore = provider.Db{}.Construct()
+	model.Update(resource, item, false)
+	data := make(map[string]interface{})
+	data["success"] = true
+
+	return c.RenderJSON(data)
 }
 
 func (c Rest) Post(domain string) revel.Result {
 	model := base.Model{}
 	item := make(map[string]interface{})
-	content, _ := ioutil.ReadAll(c.Request.Body)
-	json.Unmarshal([]byte(content), item)
+	c.Params.BindJSON(&item)
+	log.Print(item)
 	model.Domain = domain
 	model.Datastore = provider.Db{}.Construct()
-	model.Datastore.SetDomain(domain)
-	model.Domain = domain
 	model.Add(item)
 
 	return c.RenderJSON(item)
 }
 
-func Generate(domainService string) (base.ServiceContract, error) {
-	switch domainService {
-	case "job":
-		return new(job.Service), nil
-	default:
-		return nil, errors.New("Could not find domain item")
-	}
+func (c Rest) Index(domain string) revel.Result {
+	model := base.Model{}
+	model.Domain = domain
+	model.Datastore = provider.Db{}.Construct()
+
+	return c.RenderJSON(model.All())
 }

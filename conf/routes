@@ -9,16 +9,21 @@ module:testrunner
 
 GET     /                                       App.Index
 
-POST    /api/v1/:domain                         Rest.Post
+POST    /api/:version/:domain                                               Rest.Post
+#POST    /api/:version/:domain/:resource/:relation/:relationResource         Rest.PostRelation
 
-GET     /api/v1/:domain/:resource                   Rest.Get
+GET     /api/:version/:domain/:resource                                     Rest.Get
+#GET     /api/:version/:domain/:resource/:relation/:relationResource         Rest.GetRelation
 
+GET     /api/:version/:domain                                               Rest.Index
+#GET     /api/:version/:domain/:resource/:relation                           Rest.IndexRelation
 
-# Ignore favicon requests
-GET     /favicon.ico                            404
+PUT     /api/:version/:domain/:resource                                     Rest.Put
+#PUT     /api/:version/:domain/:resource/:relation/:relationResource         Rest.PutRelation
 
-# Map static resources from the /app/public folder to the /public path
-GET     /public/*filepath                       Static.Serve("public")
+PATCH   /api/:version/:domain/:resource                                     Rest.PATCH
+#PATCH   /api/:version/:domain/:resource/:relation/:relationResource         Rest.PatchRelation
+
 
 # Catch all
 *       /:controller/:action                    :controller.:action

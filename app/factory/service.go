@@ -1,7 +1,7 @@
 package factory
 
 import (
-	"gigdub/app/domain/base"
+	"github.com/MoonBabyLabs/boom/app/domain/base"
 )
 
 type ServiceContract interface {

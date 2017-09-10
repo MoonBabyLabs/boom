@@ -1,6 +1,8 @@
 package base
 
-import "gigdub/app/datastore"
+import (
+	"github.com/MoonBabyLabs/boom/app/datastore"
+)
 
 type ModelContract interface {
 }
@@ -25,10 +27,8 @@ func (m Model) init(datastore datastore.Contract, resourceFinder datastore.Resou
 	return active
 }
 
-func (m Model) Find(resource interface{}) Entities {
-	m.Datastore.Find(resource)
-
-	return m.Entities
+func (m Model) Find(resource int) map[string]interface{} {
+	return m.Datastore.Find(m.Domain, resource)
 }
 
 func (m Model) GetDomain() string {
@@ -41,10 +41,20 @@ func (m Model) SetDomain(domain string) Model {
 	return m
 }
 
-func (m Model) Add(items ...interface{}) bool {
-	if m.Datastore.Insert(items) {
+func (m Model) Add(items map[string]interface{}) bool {
+	if m.Datastore.Insert(m.Domain, items) {
 		return true
 	}
 
 	return false
+}
+
+func (m Model) All() []map[string]interface{} {
+	return m.Datastore.All(m.Domain)
+}
+
+func (m Model) Update(resource string, content map[string]interface{}, patch bool) Model {
+	m.Datastore.Update(m.Domain, resource, content, patch)
+
+	return m
 }
