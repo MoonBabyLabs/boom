@@ -107,6 +107,9 @@ i18n.default_language = en
 module.static=github.com/revel/modules/static
 
 
+db.name = 'content'
+db.host = '/tmpDb'
+
 
 ################################################################################
 
@@ -212,8 +215,6 @@ log.error.flags = 19
 log.request.output = stderr
 
 
-db.name = 'content'
-db.host = 'dbtmp'
 
 
 ################################################################################
@@ -259,3 +260,7 @@ log.error.flags = 3
 # Example:
 #   log.request.output = %(app.name)s-request.log
 log.request.output = off
+
+
+# The port on which to listen.
+http.port = 8000
