@@ -1,0 +1,34 @@
+{
+  "fields" : [{
+      "title" : {
+        "required" : true,
+        "type" : "text"
+      },
+      "author_id" : {
+        "required" : true,
+        "type" : "int"
+      },
+      "content" : [{
+        "required" : true,
+        "type" : "html"
+      }],
+      "publish_date" : {
+        "required" : true,
+        "type" : "date",
+        "default" : "now"
+      },
+      "status" : {
+        "required" : true,
+        "type" : "int",
+        "default" : 0
+      }
+    }],
+
+  "access" : {
+    "read" : "38SOS*924SDfjle39(@((D",
+    "write" : "@((leis(@idw9D9l29sla93DDI(3",
+    "update" : "slli3(#(#lsls939(@DL9292l(D(D(3die",
+    "publish" : "S9393sl92002zsldfe9@@)SL93",
+    "delete" : "SL((@(@(SLA((9393dd((@@0202dk"
+  }
+}

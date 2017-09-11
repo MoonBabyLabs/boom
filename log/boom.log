@@ -1,0 +1,8 @@
+ERROR 2017/09/11 12:01:54 mkdir /sample: permission denied
+ERROR 2017/09/11 12:10:27 mkdir /lalala: permission denied
+ERROR 2017/09/11 12:11:33 github.com/MoonBabyLabs/boom/app/datastore/tiedot.go:4:2: cannot find package "github.com/HouzuoGuo/tiedot/db" in any of:
+	/usr/local/go/src/github.com/HouzuoGuo/tiedot/db (from $GOROOT)
+	/Users/smiracle/go/src/github.com/HouzuoGuo/tiedot/db (from $GOPATH)
+
+ERROR 2017/09/11 12:21:57 Failed to listen: listen tcp :80: bind: permission denied
+ERROR 2017/09/11 12:21:57 Error running: exit status 1

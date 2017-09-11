@@ -262,6 +262,3 @@ log.error.flags = 3
 #   log.request.output = %(app.name)s-request.log
 log.request.output = off
 
-
-# The port on which to listen.
-http.port = 8000
