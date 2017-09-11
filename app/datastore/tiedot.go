@@ -62,10 +62,18 @@ func (td Tiedot) Connect(dbName string, connectionName string) Contract {
 	return td
 }
 
-func (td Tiedot) Find(collection string, resource int) map[string]interface{} {
+func (td Tiedot) Find(collection string, resource string) map[string]interface{} {
+	id, convErr := strconv.Atoi(resource)
+
+	if convErr != nil {
+		log.Panic("Could not convert resource string")
+
+		return make(map[string]interface{})
+	}
+
 	col := td.DB.Use(collection)
 
-	item, err := col.Read(resource)
+	item, err := col.Read(id)
 
 	if err != nil {
 		panic(err)
@@ -168,4 +176,25 @@ func (td Tiedot) All(collection string) []map[string]interface{} {
 	log.Print(final)
 
 	return final
+}
+
+func (td Tiedot) Delete(collection string, resource string) bool {
+	col := td.DB.Use(collection)
+	int, err := strconv.Atoi(resource)
+
+	if err != nil {
+		log.Panic(err)
+
+		return false
+	}
+
+	deleteErr := col.Delete(int)
+
+	if deleteErr != nil {
+		log.Panic(deleteErr)
+
+		return false
+	}
+
+	return true
 }

@@ -21,8 +21,11 @@ GET     /api/:version/:domain                                               Rest
 PUT     /api/:version/:domain/:resource                                     Rest.Put
 #PUT     /api/:version/:domain/:resource/:relation/:relationResource         Rest.PutRelation
 
-PATCH   /api/:version/:domain/:resource                                     Rest.PATCH
+PATCH   /api/:version/:domain/:resource                                     Rest.Patch
 #PATCH   /api/:version/:domain/:resource/:relation/:relationResource         Rest.PatchRelation
+
+DELETE  /api/:version/:domain/:resource                                     Rest.Delete
+#DELETE /api/:version/:domain/:resource/:relation/:relationResource         Rest.DeleteRelation
 
 
 # Catch all

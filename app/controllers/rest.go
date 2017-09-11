@@ -5,7 +5,7 @@ import (
 	"github.com/MoonBabyLabs/boom/app/domain/base"
 	"log"
 	"github.com/MoonBabyLabs/boom/app/provider"
-	"strconv"
+	"github.com/MoonBabyLabs/boom/app/auth"
 )
 
 
@@ -13,19 +13,18 @@ type Rest struct {
 	*revel.Controller
 }
 
-type DataResponse struct {
-	id int
-}
-
 func (c Rest) Get(domain string, resource string) revel.Result {
-	data := make(map[string]interface{})
+	cf := auth.ContentConf{}.GetContentConf(domain)
+
+	if !cf.HasAccess(c.Request.Header, "read") {
+		return c.NotFound("Unable to access resource")
+	}
+
 	model := base.Model{}
 	model.Domain = domain
+	model.Fields = cf.Fields
 	model.Datastore = provider.Db{}.Construct()
-	i, err := strconv.Atoi(resource)
-	data["data"] = model.Find(i)
-	data["error"] = err
-	data["sucess"] = false
+	data := model.Find(resource)
 
 	return c.RenderJSON(data)
 }
@@ -44,7 +43,7 @@ func (c Rest) Patch(domain string, resource string) revel.Result {
 	return c.RenderJSON(data)
 }
 
-func (c Rest) PUT(domain string, resource string) revel.Result {
+func (c Rest) Put(domain string, resource string) revel.Result {
 	model := base.Model{}
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
@@ -58,11 +57,19 @@ func (c Rest) PUT(domain string, resource string) revel.Result {
 }
 
 func (c Rest) Post(domain string) revel.Result {
+	cf := auth.ContentConf{}.GetContentConf(domain)
+
+	if !cf.HasAccess(c.Request.Header,"write") {
+		return c.NotFound("Unable to access page")
+	}
+
 	model := base.Model{}
+	log.Print(cf.Fields)
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
 	log.Print(item)
 	model.Domain = domain
+	model.Fields = cf.Fields
 	model.Datastore = provider.Db{}.Construct()
 	model.Add(item)
 
@@ -70,9 +77,40 @@ func (c Rest) Post(domain string) revel.Result {
 }
 
 func (c Rest) Index(domain string) revel.Result {
+	cf := auth.ContentConf{}.GetContentConf(domain)
+	log.Print(c.Request.Header)
+
+	if !cf.HasAccess(c.Request.Header,"read") {
+		return c.NotFound("Unable to access page")
+	}
+
+	model := base.Model{}
+	model.Domain = domain
+	model.Fields = cf.Fields
+	model.Datastore = provider.Db{}.Construct()
+
+	return c.RenderJSON(model.All())
+}
+
+func (c Rest) Delete(domain string, resource string) revel.Result {
+	cf := auth.ContentConf{}.GetContentConf(domain)
+	data := make(map[string]interface{})
+
+	if !cf.HasAccess(c.Request.Header, "delete") {
+		return c.NotFound("unable to access page")
+	}
+
 	model := base.Model{}
 	model.Domain = domain
 	model.Datastore = provider.Db{}.Construct()
 
-	return c.RenderJSON(model.All())
+	if model.Delete(resource) {
+		data["success"] = true
+
+		return c.RenderJSON(data)
+	}
+
+	data["success"] = false
+
+	return c.RenderJSON(data)
 }

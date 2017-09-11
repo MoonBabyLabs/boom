@@ -109,6 +109,7 @@ module.static=github.com/revel/modules/static
 
 db.name = 'content'
 db.host = '/tmpDb'
+content.confDir = '/src/github.com/MoonBabyLabs/boom/conf/content'
 
 
 ################################################################################
