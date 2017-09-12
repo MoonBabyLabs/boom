@@ -80,7 +80,6 @@ func (c Rest) Post(domain string) revel.Result {
 
 func (c Rest) Index(domain string) revel.Result {
 	cf := auth.ContentConf{}.GetContentConf(domain)
-	log.Print(c.Request.Header)
 
 	if !cf.HasAccess(c.Request.Header,"read") {
 		return c.NotFound("Unable to access page")

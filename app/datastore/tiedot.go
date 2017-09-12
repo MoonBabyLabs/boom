@@ -70,7 +70,8 @@ func (td Tiedot) Find(collection string, resource string) map[string]interface{}
 		return make(map[string]interface{})
 	}
 
-	col := td.DB.ForceUse(collection)
+	td.DB.Create(collection)
+	col := td.DB.Use(collection)
 
 	item, err := col.Read(id)
 
@@ -84,7 +85,8 @@ func (td Tiedot) Find(collection string, resource string) map[string]interface{}
 }
 
 func (td Tiedot) Insert(collection string, resource map[string]interface{}) bool {
-	td.DB.ForceUse(collection).Insert(resource)
+	td.DB.Create(collection)
+	td.DB.Use(collection).Insert(resource)
 
 	return true
 }
@@ -109,6 +111,7 @@ func (td Tiedot) GetDomain() string {
 }
 
 func (td Tiedot) Update(collection string, resource string, content map[string]interface{}, patch bool) bool {
+	td.DB.Create(collection)
 	col := td.DB.Use(collection)
 	id, err := strconv.Atoi(resource)
 
@@ -143,9 +146,12 @@ func (td Tiedot) Update(collection string, resource string, content map[string]i
 }
 
 func (td Tiedot) All(collection string) []map[string]interface{} {
-	fc := td.DB.ForceUse(collection)
+	td.DB.Create(collection)
+	fc := td.DB.Use(collection)
 	// Native Array
 	query := "all"
+
+
 
 	// Evaluate the query
 	queryResult := make(map[int]struct{})
@@ -173,11 +179,7 @@ func (td Tiedot) All(collection string) []map[string]interface{} {
 
 // deletes a resource from a collection.
 func (td Tiedot) Delete(collection string, resource string) bool {
-
-	if !td.DB.ColExists(collection) {
-		return false
-	}
-
+	td.DB.Create(collection)
 	col := td.DB.Use(collection)
 	id, err := strconv.Atoi(resource)
 
