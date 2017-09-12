@@ -81,6 +81,10 @@ func (c Rest) Post(domain string) revel.Result {
 func (c Rest) Index(domain string) revel.Result {
 	cf := auth.ContentConf{}.GetContentConf(domain)
 
+	if cf.Fields == nil {
+		return c.NotFound("Either content type doesn't exist or wasnt able to parse fields correctly")
+	}
+
 	if !cf.HasAccess(c.Request.Header,"read") {
 		return c.NotFound("Unable to access page")
 	}
