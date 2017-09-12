@@ -1,9 +1,9 @@
 package provider
 
+import "reflect"
 
 type Contract interface {
 	Construct() Contract
-	GetName() string
 }
 
 type ProviderList map[string]Contract
@@ -15,15 +15,18 @@ type Base struct {
 
 
 func (b Base) Get (provider Contract) interface{} {
+	name := reflect.TypeOf(provider).Name()
+
 	if b.Providers == nil {
 		b.Set(provider, b.Providers)
 	}
 
-	return b.Providers[provider.GetName()]
+	return b.Providers[name]
 }
 
 func (b Base) Set (provider Contract, list ProviderList) ProviderList {
-	list[provider.GetName()] = provider.Construct()
+	name := reflect.TypeOf(provider).Name()
+	list[name] = provider.Construct()
 
 	return list
 }

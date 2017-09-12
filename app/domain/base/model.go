@@ -2,8 +2,9 @@ package base
 
 import (
 	"github.com/MoonBabyLabs/boom/app/datastore"
-	"log"
 	"time"
+	"github.com/MoonBabyLabs/boom/app/service/filemanager"
+	"mime/multipart"
 )
 
 type ModelContract interface {
@@ -15,10 +16,14 @@ type EntityContract interface {
 
 type Entities map[string] interface{}
 
+
+
 type Model struct {
 	Datastore datastore.Contract
 	ResourceFinder datastore.ResourceFinder
 	Domain string
+	Files map[string][]*multipart.FileHeader
+	FileManager filemanager.Contract
 	Entities Entities
 	Fields []map[string]map[string]interface{}
 }
@@ -45,26 +50,25 @@ func (m Model) SetDomain(domain string) Model {
 }
 
 func (m Model) Add(items map[string]interface{}) bool {
-	entity := make(map[string]interface{})
+	entity := m.FileManager.Add(m.Files, m.Fields)
 	entity["updated_at"] = time.Now()
 	entity["created_at"] = time.Now()
 
-	for k, v := range m.Fields {
-		log.Print(k)
-		for p, n := range v {
-			if items[p] != nil {
+	for _, v := range m.Fields {
+		for p, _ := range v {
+			if items[p] != nil && entity[p] == nil {
 				entity[p] = items[p]
 			}
-			// Can be used for later
-			log.Print(n)
 		}
 	}
+
 	if m.Datastore.Insert(m.Domain, entity) {
 		return true
 	}
 
 	return false
 }
+
 
 func (m Model) Delete(resource string) bool {
 	return m.Datastore.Delete(m.Domain, resource)

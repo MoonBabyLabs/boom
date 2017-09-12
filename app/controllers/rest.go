@@ -70,6 +70,8 @@ func (c Rest) Post(domain string) revel.Result {
 	log.Print(item)
 	model.Domain = domain
 	model.Fields = cf.Fields
+	model.Files = c.Params.Files
+	model.FileManager = provider.Filemanager{}.Construct()
 	model.Datastore = provider.Db{}.Construct()
 	model.Add(item)
 

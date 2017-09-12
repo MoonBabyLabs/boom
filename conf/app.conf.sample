@@ -107,9 +107,9 @@ i18n.default_language = en
 module.static=github.com/revel/modules/static
 
 
-db.name = 'content'
-db.host = '/tmpDb'
-content.confDir = '/src/github.com/MoonBabyLabs/boom/conf/content'
+db.name = /content
+db.host = /src/github.com/MoonBabyLabs/boom/data
+content.confDir = /src/github.com/MoonBabyLabs/boom/conf/content/
 
 
 ################################################################################

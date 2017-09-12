@@ -16,6 +16,9 @@
         "required" : true,
         "type" : "int",
         "default" : 0
+      },
+      "img" : {
+        "type" : "image"
       }
     }],
 

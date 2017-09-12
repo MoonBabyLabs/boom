@@ -5,6 +5,7 @@ import (
 	"os"
 	"log"
 	"strconv"
+	"go/build"
 )
 
 type Tiedot struct {
@@ -41,17 +42,15 @@ func (td Tiedot) SetDB(dbName string, host string) interface{} {
 
 func (td Tiedot) Connect(dbName string, connectionName string) Contract {
 	_, err := os.Stat(connectionName)
-
-	td.DbHost = connectionName
-	td.DbName = dbName
+	dbLoc := build.Default.GOPATH + connectionName
 
 	if err != nil {
-		err2 := os.Mkdir(connectionName, 0755)
+		err2 := os.Mkdir(dbLoc, 0755)
 		log.Print(err2)
 	}
 
 	// (Create if not exist) open a database
-	myDB, err := db.OpenDB(dbName)
+	myDB, err := db.OpenDB(dbLoc + dbName)
 
 	if err != nil {
 		log.Print(err)

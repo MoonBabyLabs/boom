@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"log"
 	"github.com/revel/revel"
+	"go/build"
 )
 
 
@@ -24,7 +25,8 @@ func (c ContentConf) HasAccess(headers http.Header, accessType string) bool {
 
 func (c ContentConf) GetContentConf(domain string) ContentConf {
 	contentConfFile := bytes.Buffer{}
-	dir := revel.Config.StringDefault("content.confDir", "/src/MoonBabyLabs/boom/conf/content/")
+	dir := revel.Config.StringDefault("content.confDir", "/conf/content/")
+	contentConfFile.WriteString(build.Default.GOPATH)
 	contentConfFile.WriteString(dir)
 	contentConfFile.WriteString(domain)
 	contentConfFile.WriteString(".json")
