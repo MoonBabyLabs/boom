@@ -1,7 +1,7 @@
 package datastore
 
 import (
-	"github.com/HouzuoGuo/tiedot/db"
+	"github.com/StephenMiracle/tiedot/db"
 	"os"
 	"log"
 	"strconv"
@@ -70,7 +70,7 @@ func (td Tiedot) Find(collection string, resource string) map[string]interface{}
 		return make(map[string]interface{})
 	}
 
-	col := td.DB.Use(collection)
+	col := td.DB.ForceUse(collection)
 
 	item, err := col.Read(id)
 
@@ -84,17 +84,11 @@ func (td Tiedot) Find(collection string, resource string) map[string]interface{}
 }
 
 func (td Tiedot) Insert(collection string, resource map[string]interface{}) bool {
-	log.Print(resource)
-	err := td.DB.Create(collection)
-
-	if err != nil {
-		log.Print(err)
-	}
-
-	td.DB.Use(collection).Insert(resource)
+	td.DB.ForceUse(collection).Insert(resource)
 
 	return true
 }
+
 
 func (td Tiedot) SetDomain(domain string) Contract {
 	log.Print(domain)
@@ -149,7 +143,7 @@ func (td Tiedot) Update(collection string, resource string, content map[string]i
 }
 
 func (td Tiedot) All(collection string) []map[string]interface{} {
-	fc := td.DB.Use(collection)
+	fc := td.DB.ForceUse(collection)
 	// Native Array
 	query := "all"
 
@@ -178,7 +172,7 @@ func (td Tiedot) All(collection string) []map[string]interface{} {
 }
 
 func (td Tiedot) Delete(collection string, resource string) bool {
-	col := td.DB.Use(collection)
+	col := td.DB.ForceUse(collection)
 	int, err := strconv.Atoi(resource)
 
 	if err != nil {
