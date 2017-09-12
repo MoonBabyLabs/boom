@@ -171,9 +171,15 @@ func (td Tiedot) All(collection string) []map[string]interface{} {
 	return final
 }
 
+// deletes a resource from a collection.
 func (td Tiedot) Delete(collection string, resource string) bool {
-	col := td.DB.ForceUse(collection)
-	int, err := strconv.Atoi(resource)
+
+	if !td.DB.ColExists(collection) {
+		return false
+	}
+
+	col := td.DB.Use(collection)
+	id, err := strconv.Atoi(resource)
 
 	if err != nil {
 		log.Panic(err)
@@ -181,7 +187,7 @@ func (td Tiedot) Delete(collection string, resource string) bool {
 		return false
 	}
 
-	deleteErr := col.Delete(int)
+	deleteErr := col.Delete(id)
 
 	if deleteErr != nil {
 		log.Panic(deleteErr)
