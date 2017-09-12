@@ -4,3 +4,6 @@ routes/
 conf/app.conf
 .idea
 data/content
+conf/content/*
+!conf/content/*.sample
+*.gitkeep
