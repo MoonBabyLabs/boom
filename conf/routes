@@ -7,25 +7,25 @@ module:testrunner
 # module:jobs
 
 
-GET     /                                       App.Index
+GET     /                                                       App.Index
 
-POST    /api/:version/:domain                                               Rest.Post
-#POST    /api/:version/:domain/:resource/:relation/:relationResource         Rest.PostRelation
+POST    /:domain                                               Rest.Post
+#POST   /:domain/:resource/:relation/:relationResource         Rest.PostRelation
 
-GET     /api/:version/:domain/:resource                                     Rest.Get
-#GET     /api/:version/:domain/:resource/:relation/:relationResource         Rest.GetRelation
+GET     /:domain/:resource                                     Rest.Get
+#GET    /:domain/:resource/:relation/:relationResource         Rest.GetRelation
 
-GET     /api/:version/:domain                                               Rest.Index
-#GET     /api/:version/:domain/:resource/:relation                           Rest.IndexRelation
+GET     /:domain                                               Rest.Index
+#GET    /:domain/:resource/:relation                           Rest.IndexRelation
 
-PUT     /api/:version/:domain/:resource                                     Rest.Put
-#PUT     /api/:version/:domain/:resource/:relation/:relationResource         Rest.PutRelation
+PUT     /:domain/:resource                                     Rest.Put
+#PUT    /:domain/:resource/:relation/:relationResource         Rest.PutRelation
 
-PATCH   /api/:version/:domain/:resource                                     Rest.Patch
-#PATCH   /api/:version/:domain/:resource/:relation/:relationResource         Rest.PatchRelation
+PATCH   /:domain/:resource                                     Rest.Patch
+#PATCH  /:domain/:resource/:relation/:relationResource         Rest.PatchRelation
 
-DELETE  /api/:version/:domain/:resource                                     Rest.Delete
-#DELETE /api/:version/:domain/:resource/:relation/:relationResource         Rest.DeleteRelation
+DELETE  /:domain/:resource                                     Rest.Delete
+#DELETE /:domain/:resource/:relation/:relationResource         Rest.DeleteRelation
 
 
 # Catch all
