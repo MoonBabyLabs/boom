@@ -15,6 +15,8 @@ type Rest struct {
 
 func(c Rest) addHeaderCORS() revel.Result {
 	c.Response.Out.Header().Add("Access-Control-Allow-Origin","*")
+	c.Response.Out.Header().Add("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE, OPTIONS")
+	c.Response.Out.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
 	return nil
 }
