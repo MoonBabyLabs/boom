@@ -24,6 +24,13 @@
       }
     }],
 
+  "relations" : [{
+    "comment" : {
+        "type" : "child",
+        "required" : false
+    }
+  }],
+
   "access" : {
     "read" : null,
     "write" : "@((leis(@idw9D9l29sla93DDI(3",

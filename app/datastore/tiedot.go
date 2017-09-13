@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"go/build"
+	"encoding/json"
 )
 
 type Tiedot struct {
@@ -15,6 +16,11 @@ type Tiedot struct {
 	*db.DB
 	Domain string
 	Items []map[string]interface{}
+}
+
+type TiedotQuery struct {
+	Eq string
+	In string
 }
 
 func (td Tiedot) Init(dbName string, dbConnection string) Contract {
@@ -145,18 +151,41 @@ func (td Tiedot) Update(collection string, resource string, content map[string]i
 
 }
 
-func (td Tiedot) All(collection string) []map[string]interface{} {
+func (td Tiedot) SetIndexes(collection string, fullQuery Query) {
+	log.Print(fullQuery)
+	col := td.DB.Use(collection)
+	log.Print(fullQuery.Where)
+	index := make([]string, 0)
+	index = append(index, fullQuery.Where.Reference)
+	col.Index(index)
+}
+
+func (td Tiedot) All(collection string, query Query) []map[string]interface{} {
 	td.DB.Create(collection)
 	fc := td.DB.Use(collection)
-	// Native Array
-	query := "all"
-
-
-
-	// Evaluate the query
+	td.SetIndexes(collection, query)
 	queryResult := make(map[int]struct{})
-	if err := db.EvalQuery(query, fc, &queryResult); nil != err {
-		panic(err)
+
+	// Lets get all records and hope for the best when query is empty
+	if (Query{}) == query {
+		finalQuery := "all"
+		// Evaluate the query
+		if err := db.EvalQuery(finalQuery, fc, &queryResult); nil != err {
+			panic(err)
+		}
+	} else {
+		finalQuery := make([]interface{}, 0)
+		in := make([]interface{}, 0)
+		qm := make(map[string]interface{})
+		qm["eq"] = query.Where.Value
+		qm["in"] = append(in, query.Where.Reference)
+		finalQuery = append(finalQuery, qm)
+
+		if err := db.EvalQuery(finalQuery, fc, &queryResult); nil != err {
+			panic(err)
+		}
+
+		log.Print(&queryResult)
 	}
 
 	final := td.Items

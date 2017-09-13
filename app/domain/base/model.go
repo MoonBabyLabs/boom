@@ -5,6 +5,7 @@ import (
 	"time"
 	"github.com/MoonBabyLabs/boom/app/service/filemanager"
 	"mime/multipart"
+	"log"
 )
 
 type ModelContract interface {
@@ -74,8 +75,27 @@ func (m Model) Delete(resource string) bool {
 	return m.Datastore.Delete(m.Domain, resource)
 }
 
-func (m Model) All() []map[string]interface{} {
-	return m.Datastore.All(m.Domain)
+func (m Model) All(attributes map[string]interface{}) []map[string]interface{} {
+	q := datastore.Query{}
+	where := datastore.WhereQuery{}
+
+	log.Print(attributes)
+	for _, v := range m.Fields {
+		for f, _ := range v {
+			log.Print(f)
+			log.Print(attributes[f])
+			if attributes[f] != nil {
+				where.Reference = f
+				where.Value = attributes[f]
+			}
+		}
+	}
+
+	if where.Value != nil {
+		q.Where = where
+	}
+
+	return m.Datastore.All(m.Domain, q)
 }
 
 func (m Model) Update(resource string, content map[string]interface{}, patch bool) Model {

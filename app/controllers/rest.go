@@ -109,8 +109,18 @@ func (c Rest) Index(domain string) revel.Result {
 	model.Domain = domain
 	model.Fields = cf.Fields
 	model.Datastore = provider.Db{}.Construct()
+	attrs := make(map[string]interface{})
 
-	return c.RenderJSON(model.All())
+	for k, v := range c.Params.Values {
+		for _, b := range v {
+			attrs[k] = b
+		}
+	}
+
+	log.Print(attrs)
+	res := model.All(attrs)
+
+	return c.RenderJSON(res)
 }
 
 func (c Rest) Delete(domain string, resource string) revel.Result {
