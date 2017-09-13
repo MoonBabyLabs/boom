@@ -6,7 +6,6 @@ import (
 	"log"
 	"strconv"
 	"go/build"
-	"encoding/json"
 )
 
 type Tiedot struct {
