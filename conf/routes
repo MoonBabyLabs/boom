@@ -27,6 +27,4 @@ PATCH   /:domain/:resource                                     Rest.Patch
 DELETE  /:domain/:resource                                     Rest.Delete
 #DELETE /:domain/:resource/:relation/:relationResource         Rest.DeleteRelation
 
-
-# Catch all
-*       /:controller/:action                    :controller.:action
+GET    /public/*filepath            Static.Serve("public")
