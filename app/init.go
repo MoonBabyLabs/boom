@@ -94,8 +94,9 @@ var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
 			c.Response.Out.Header().Set("Access-Control-Allow-Origin", "*")
 		}
 
+
 		c.Response.Out.Header().Add("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE, OPTIONS")
-		c.Response.Out.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+		c.Response.Out.Header().Add("Access-Control-Allow-Headers", "content-type,write,delete,update,publish")
 	}
 
 	fc[0](c, fc[1:]) // Execute the next filter stage.
