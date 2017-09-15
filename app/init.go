@@ -71,22 +71,29 @@ func RemoveDomainBasePath(c *revel.Controller, fc []revel.Filter) {
 // should probably also have a filter for CSRF
 // not sure if it can go in the same filter or not
 var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
-	accessHosts := strings.Split(revel.Config.StringDefault("access.hosts", ""), ",")
-
+	accessHostsConfig := revel.Config.StringDefault("access.hosts", "")
+	accessHosts := strings.Split(accessHostsConfig, ",")
 	c.Response.Out.Header().Add("X-Frame-Options", "SAMEORIGIN")
 	c.Response.Out.Header().Add("X-XSS-Protection", "1; mode=block")
 	c.Response.Out.Header().Add("X-Content-Type-Options", "nosniff")
 
-	if inStringArray(c.Request.Host, accessHosts) {
+	if inStringArray(c.Request.Host, accessHosts) || accessHostsConfig == "*" {
 		protocol := "http://"
 
 		if strings.Contains(c.Request.Proto, "HTTPS") {
-			protocol = "HTTPS://"
+			protocol = "https://"
 		}
+
+		log.Print(c.Response.Out.Header().Get("Access-Control-Allow-Origin"))
 
 		c.Response.Out.Header().Add(
 			"Access-Control-Allow-Origin",
 			protocol + c.Request.Host)
+
+		if accessHostsConfig == "*" {
+			c.Response.Out.Header().Set("Access-Control-Allow-Origin", "*")
+		}
+
 		c.Response.Out.Header().Add("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE, OPTIONS")
 		c.Response.Out.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 	}
