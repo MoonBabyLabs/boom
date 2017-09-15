@@ -30,3 +30,5 @@ DELETE  /:domain/:resource                                     Rest.Delete
 GET    /public/*filepath            Static.Serve("public")
 GET    /editor                      Static.Serve("public/editor/index.html")
 GET    /editor/*filepath            Static.Serve("public/editor")
+
+OPTIONS /*                                                  Rest.Options

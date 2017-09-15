@@ -29,6 +29,13 @@ func (c Rest) Get(domain string, resource string) revel.Result {
 	return c.RenderJSON(data)
 }
 
+func (c Rest) Options() revel.Result {
+	success := make(map[string]bool)
+	success["success"] = true
+
+	return c.RenderJSON(success)
+}
+
 func (c Rest) Patch(domain string, resource string) revel.Result {
 	model := base.Model{}
 	item := make(map[string]interface{})
