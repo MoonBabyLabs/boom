@@ -10,21 +10,23 @@ module:testrunner
 GET     /                                                       App.Index
 
 POST    /:domain                                               Rest.Post
-#POST   /:domain/:resource/:relation/:relationResource         Rest.PostRelation
+#POST   /api/:version/:domain/:resource/:relation/:relationResource         Rest.PostRelation
 
 GET     /:domain/:resource                                     Rest.Get
-#GET    /:domain/:resource/:relation/:relationResource         Rest.GetRelation
+#GET    /api/:version/:domain/:resource/:relation/:relationResource         Rest.GetRelation
 
 GET     /:domain                                               Rest.Index
-#GET    /:domain/:resource/:relation                           Rest.IndexRelation
+#GET    /api/:version/:domain/:resource/:relation                           Rest.IndexRelation
 
 PUT     /:domain/:resource                                     Rest.Put
-#PUT    /:domain/:resource/:relation/:relationResource         Rest.PutRelation
+#PUT    /api/:version/:domain/:resource/:relation/:relationResource         Rest.PutRelation
 
 PATCH   /:domain/:resource                                     Rest.Patch
-#PATCH  /:domain/:resource/:relation/:relationResource         Rest.PatchRelation
+#PATCH  /api/:version/:domain/:resource/:relation/:relationResource         Rest.PatchRelation
 
 DELETE  /:domain/:resource                                     Rest.Delete
-#DELETE /:domain/:resource/:relation/:relationResource         Rest.DeleteRelation
+#DELETE /api/:version/:domain/:resource/:relation/:relationResource         Rest.DeleteRelation
 
 GET    /public/*filepath            Static.Serve("public")
+GET    /editor                      Static.Serve("public/editor/index.html")
+GET    /editor/*filepath            Static.Serve("public/editor")

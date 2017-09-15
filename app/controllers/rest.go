@@ -13,17 +13,7 @@ type Rest struct {
 	*revel.Controller
 }
 
-func(c Rest) addHeaderCORS() revel.Result {
-	c.Response.Out.Header().Add("Access-Control-Allow-Origin","*")
-	c.Response.Out.Header().Add("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE, OPTIONS")
-	c.Response.Out.Header().Add("Access-Control-Allow-Headers", "Content-Type")
-
-	return nil
-}
-
 func (c Rest) Get(domain string, resource string) revel.Result {
-	c.addHeaderCORS()
-
 	cf := auth.ContentConf{}.GetContentConf(domain)
 
 	if !cf.HasAccess(c.Request.Header, "read") {
@@ -40,8 +30,6 @@ func (c Rest) Get(domain string, resource string) revel.Result {
 }
 
 func (c Rest) Patch(domain string, resource string) revel.Result {
-	c.addHeaderCORS()
-
 	model := base.Model{}
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
@@ -56,8 +44,6 @@ func (c Rest) Patch(domain string, resource string) revel.Result {
 }
 
 func (c Rest) Put(domain string, resource string) revel.Result {
-	c.addHeaderCORS()
-
 	model := base.Model{}
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
@@ -71,8 +57,6 @@ func (c Rest) Put(domain string, resource string) revel.Result {
 }
 
 func (c Rest) Post(domain string) revel.Result {
-	c.addHeaderCORS()
-
 	cf := auth.ContentConf{}.GetContentConf(domain)
 
 	if !cf.HasAccess(c.Request.Header,"write") {
@@ -95,8 +79,6 @@ func (c Rest) Post(domain string) revel.Result {
 }
 
 func (c Rest) Index(domain string) revel.Result {
-	c.addHeaderCORS()
-
 	cf := auth.ContentConf{}.GetContentConf(domain)
 
 	if cf.Fields == nil {
@@ -126,8 +108,6 @@ func (c Rest) Index(domain string) revel.Result {
 }
 
 func (c Rest) Delete(domain string, resource string) revel.Result {
-	c.addHeaderCORS()
-	
 	cf := auth.ContentConf{}.GetContentConf(domain)
 	data := make(map[string]interface{})
 

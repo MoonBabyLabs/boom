@@ -111,6 +111,17 @@ db.name = /content
 db.host = /src/github.com/MoonBabyLabs/boom/data
 content.confDir = /src/github.com/MoonBabyLabs/boom/conf/content/
 
+# Hosts that are allowed access to request access across domains.
+# Given that https requires exact match reference, we don't use wildcards for CORS to keep things consistent. You
+# will need to put any production or test hosts here.
+access.hosts = http://localhost:9000, https://www.example.com
+
+# set a base path directory for the app which isn't applicable to content functionality.
+# This is used for purposes when you may want to create multiple apis on same domain or versioning.
+# The base path ends when your content type starts.
+# ex: http://example.com/api/v1/post/3322323    => domain.base.path = /api/v1 | The post begins the content type
+# ex: http://example.com/content/api/car        => domain.base.path = /content/api | The car begins the content type
+domain.route.base.path = /api/v1
 
 ################################################################################
 
