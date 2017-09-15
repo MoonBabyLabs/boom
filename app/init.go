@@ -24,7 +24,6 @@ func init() {
 		revel.RouterFilter,            // Use the routing table to select the right Action
 		revel.FilterConfiguringFilter, // A hook for adding or removing per-Action filters.
 		revel.ParamsFilter,            // Parse parameters into Controller.Params.
-		ParseJsonBodyFilter,
 		revel.SessionFilter,           // Restore and write the session cookie.
 		revel.FlashFilter,             // Restore and write the flash cookie.
 		revel.ValidationFilter,        // Restore kept validation errors and save new ones from cookie.
@@ -32,6 +31,7 @@ func init() {
 		HeaderFilter,                  // Add some security based headers
 		revel.InterceptorFilter,       // Run interceptors around the action.
 		revel.CompressFilter,          // Compress the result.
+		ParseJsonBodyFilter,
 		revel.ActionInvoker,           // Invoke the action.
 	}
 
@@ -51,7 +51,7 @@ func ParseJsonBodyFilter(c *revel.Controller, fc []revel.Filter) {
 		log.Print(err)
 	}
 
-	if content != nil && err != nil {
+	if content != nil && err != nil && c.Params.JSON != nil {
 		c.Params.JSON = content
 	}
 
