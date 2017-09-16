@@ -74,21 +74,21 @@ func ValidateDomainBasePath(c *revel.Controller, fc []revel.Filter) {
 	fc[0](c, fc[1:])
 }
 
-// Lets remove base path from the app structure so its sitting on its own root.
+// RemoveDomainBasePath removes the base path from the app structure so the app thinks its sitting on its own root.
 func RemoveDomainBasePath(c *revel.Controller, fc []revel.Filter) {
-	c.Request.Request.URL.Path = "/" + strings.Replace(
-		c.Request.Request.URL.Path,
-		revel.Config.StringDefault("domain.base.path",""),
-		"",
-		-1)
 
+	c.Request.Request.URL.Path = strings.Replace(
+		c.Request.Request.URL.Path,
+		revel.Config.StringDefault("domain.base.path", ""),
+		"",
+		1)
+
+	log.Print(c.Request.Request.URL.Path)
 	fc[0](c, fc[1:])
 }
 
 
 // HeaderFilter adds common security headers
-// TODO turn this into revel.HeaderFilter
-// should probably also have a filter for CSRF
 // not sure if it can go in the same filter or not
 var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
 	accessHostsConfig := revel.Config.StringDefault("access.hosts", "")
