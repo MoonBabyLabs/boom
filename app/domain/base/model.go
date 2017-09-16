@@ -25,7 +25,7 @@ type Model struct {
 	Domain string
 	Files map[string][]*multipart.FileHeader
 	FileManager filemanager.Contract
-	Entities Entities
+	Entity map[string]interface{}
 	Fields []map[string]map[string]interface{}
 }
 
@@ -37,7 +37,9 @@ func (m Model) init(datastore datastore.Contract, resourceFinder datastore.Resou
 }
 
 func (m Model) Find(resource string) map[string]interface{} {
-	return m.Datastore.Find(m.Domain, resource)
+	m.Entity = m.Datastore.Find(m.Domain, resource)
+
+	return m.Entity
 }
 
 func (m Model) GetDomain() string {

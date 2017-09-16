@@ -69,6 +69,7 @@ func (td Tiedot) Connect(dbName string, connectionName string) Contract {
 func (td Tiedot) Find(collection string, resource string) map[string]interface{} {
 	id, convErr := strconv.Atoi(resource)
 
+	log.Print(id)
 	if convErr != nil {
 		log.Panic("Could not convert resource string")
 
@@ -84,7 +85,9 @@ func (td Tiedot) Find(collection string, resource string) map[string]interface{}
 		panic(err)
 	}
 
-	item["id"] = resource
+	log.Print(item)
+
+	item["id"] = id
 
 	return item
 }
@@ -165,7 +168,7 @@ func (td Tiedot) All(collection string, query Query) []map[string]interface{} {
 	td.SetIndexes(collection, query)
 	queryResult := make(map[int]struct{})
 
-	// Lets get all records and hope for the best when query is empty
+	// Lets get all records and hope for the best with performance when query is empty
 	if (Query{}) == query {
 		finalQuery := "all"
 		// Evaluate the query
@@ -192,7 +195,7 @@ func (td Tiedot) All(collection string, query Query) []map[string]interface{} {
 	// Fetch the results
 	for id := range queryResult {
 		readBack, err := fc.Read(id)
-		readBack["id"] = id
+		readBack["id"] = strconv.Itoa(id)
 		if nil != err {
 			panic(err)
 		}

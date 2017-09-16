@@ -24,11 +24,13 @@ func (c Rest) Get(domain string, resource string) revel.Result {
 	model.Domain = domain
 	model.Fields = cf.Fields
 	model.Datastore = provider.Db{}.Construct()
-	data := model.Find(resource)
 
-	return c.RenderJSON(data)
+	return c.RenderJSON(model.Find(resource))
 }
 
+/*
+	Options route is used for pre-flight at this point.
+ */
 func (c Rest) Options() revel.Result {
 	success := make(map[string]bool)
 	success["success"] = true
@@ -36,6 +38,10 @@ func (c Rest) Options() revel.Result {
 	return c.RenderJSON(success)
 }
 
+/*
+	@todo Patch should follow some standard that also has description. Needs more research to
+	determine how to handle standardization without overcomplicating it.
+ */
 func (c Rest) Patch(domain string, resource string) revel.Result {
 	model := base.Model{}
 	item := make(map[string]interface{})
