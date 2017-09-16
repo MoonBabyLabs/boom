@@ -76,7 +76,11 @@ func ValidateDomainBasePath(c *revel.Controller, fc []revel.Filter) {
 
 // Lets remove base path from the app structure so its sitting on its own root.
 func RemoveDomainBasePath(c *revel.Controller, fc []revel.Filter) {
-	c.Request.Request.URL.Path = "/" + strings.Trim(c.Request.Request.URL.Path, revel.Config.StringDefault("domain.base.path", ""))
+	c.Request.Request.URL.Path = "/" + strings.Replace(
+		c.Request.Request.URL.Path,
+		revel.Config.StringDefault("domain.base.path",""),
+		"",
+		-1)
 
 	fc[0](c, fc[1:])
 }

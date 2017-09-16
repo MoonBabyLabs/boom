@@ -71,8 +71,6 @@ func (td Tiedot) Find(collection string, resource string) map[string]interface{}
 
 	log.Print(id)
 	if convErr != nil {
-		log.Panic("Could not convert resource string")
-
 		return make(map[string]interface{})
 	}
 

@@ -16,15 +16,13 @@ type Rest struct {
 }
 
 // Get provides the access point for GET requests to a single content resource.
-//
 // @param string domain | the  content type you would like to access.
-//
 // @param string resource | the identifier for the desired resource item.
-//
 // @todo  refactor domain to a better name of contentType or type
 //
 // Returns a Revel render result
 func (c Rest) Get(domain string, resource string) revel.Result {
+	log.Print(domain)
 	cf := auth.ContentConf{}.GetContentConf(domain)
 
 	if !cf.HasAccess(c.Request.Header, "read") {
