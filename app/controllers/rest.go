@@ -1,3 +1,5 @@
+// Package controllers hosts all of the API controllers available.
+// Each type of API controller may have their own defined interface methods and routes.
 package controllers
 
 import (
@@ -13,6 +15,15 @@ type Rest struct {
 	*revel.Controller
 }
 
+// Get provides the access point for GET requests to a single content resource.
+//
+// @param string domain | the  content type you would like to access.
+//
+// @param string resource | the identifier for the desired resource item.
+//
+// @todo  refactor domain to a better name of contentType or type
+//
+// Returns a Revel render result
 func (c Rest) Get(domain string, resource string) revel.Result {
 	cf := auth.ContentConf{}.GetContentConf(domain)
 
@@ -28,9 +39,10 @@ func (c Rest) Get(domain string, resource string) revel.Result {
 	return c.RenderJSON(model.Find(resource))
 }
 
-/*
-	Options route is used for pre-flight at this point.
- */
+// Options provides a route request for OPTIONS based routes.
+// It is generally useful for preflight requests from browsers.
+//
+// Returns a success message in the revel render result.
 func (c Rest) Options() revel.Result {
 	success := make(map[string]bool)
 	success["success"] = true
