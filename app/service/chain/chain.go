@@ -33,7 +33,7 @@ func (t BoomChain) Block() BlockHandler {
 
 func (t BoomChain) SetBlock(block BlockHandler) BoomChainHandler {
 	log.Print(block)
-	//t.block = block
+	t.block = block
 
 	return t
 }

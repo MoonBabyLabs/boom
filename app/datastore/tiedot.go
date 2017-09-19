@@ -6,7 +6,6 @@ import (
 	"log"
 	"strconv"
 	"go/build"
-	"sort"
 )
 
 type Tiedot struct {

@@ -1,22 +1,16 @@
 package provider
 
 import (
-	"reflect"
-	"github.com/MoonBabyLabs/boom/app/service"
+	"github.com/MoonBabyLabs/boom/app/service/content"
+	"log"
 )
 
 type Content struct {
 
 }
 
-
-func (c Content) Construct() service.Contract {
-	content := service.Content{}
-
-	return content
-}
-
-
-func (db Content) GetName() string {
-	return reflect.TypeOf(db).Name()
+func (c Content) Construct() content.Manager {
+	cnt := content.Default{}.SetDatastore(Db{}.Construct()).SetChain(ChainProvider{}.Construct()).SetFileManager(Filemanager{}.Construct())
+	log.Print(cnt.Chain().Block())
+	return cnt
 }

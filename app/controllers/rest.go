@@ -1,11 +1,10 @@
 // Package controllers hosts all of the API controllers available.
 // Each type of API controller may have their own defined interface methods and routes.
+// @todo need to refactor out access logic to middleware before getting to controller
 package controllers
 
 import (
 	"github.com/revel/revel"
-	"github.com/MoonBabyLabs/boom/app/domain/base"
-	"log"
 	"github.com/MoonBabyLabs/boom/app/provider"
 	"github.com/MoonBabyLabs/boom/app/auth"
 )
@@ -15,32 +14,30 @@ type Rest struct {
 	*revel.Controller
 }
 
+
 // Get provides the access point for GET requests to a single content resource.
-// @param string domain | the  content type you would like to access.
-// @param string resource | the identifier for the desired resource item.
-// @todo  refactor domain to a better name of contentType or type
-//
+// @param contentType is a string that represents the content type you would like to access.
+// @param resource is the identifier for the desired resource item.
 // Returns a Revel render result
-func (c Rest) Get(domain string, resource string) revel.Result {
-	log.Print(domain)
-	cf := auth.ContentConf{}.GetContentConf(domain)
+func (c Rest) Get(contentType string, resource string) revel.Result {
+	cf := auth.ContentConf{}.GetContentConf(contentType)
 
 	if !cf.HasAccess(c.Request.Header, "read") {
 		return c.NotFound("Unable to access resource")
 	}
 
-	model := base.Model{}
-	model.Domain = domain
-	model.Fields = cf.Fields
-	model.Datastore = provider.Db{}.Construct()
 	history := c.Params.Query.Get("history") != ""
+	cnt, err := provider.Content{}.Construct().Find(contentType, resource, history)
 
-	return c.RenderJSON(model.Find(resource, history))
+	if err != nil {
+		return c.NotFound(err.Error())
+	}
+
+	return c.RenderJSON(cnt)
 }
 
 // Options provides a route request for OPTIONS based routes.
 // It is generally useful for preflight requests from browsers.
-//
 // Returns a success message in the revel render result.
 func (c Rest) Options() revel.Result {
 	success := make(map[string]bool)
@@ -49,83 +46,92 @@ func (c Rest) Options() revel.Result {
 	return c.RenderJSON(success)
 }
 
-/*
-	@todo Patch should follow some standard that also has description. Needs more research to
-	determine how to handle standardization without overcomplicating it.
- */
-func (c Rest) Patch(domain string, resource string) revel.Result {
-	model := base.Model{}
+// Patch handles an HTTP Patch request method.
+// It will patch a resource item for an individual content type if the request matches the appropriate authorization and access.
+// @param contentType is a string that tells us the type of content we are patching.
+// @param resource is a string that tells us the resource identifier that we are patching.
+// Patch will return back a success method with data on success. It will return an appropriate HTTP error code and message on failuare.
+// @todo Patch should follow some standard that also has description. Needs more research to determine how to handle standardization without overcomplicating it.
+func (c Rest) Patch(contentType string, resource string) revel.Result {
+	cf := auth.ContentConf{}.GetContentConf(contentType)
+
+	if !cf.HasAccess(c.Request.Header, "update") {
+		return c.NotFound("Unable to access page")
+	}
+
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
-	log.Print(item)
-	model.Domain = domain
-	model.Datastore = provider.Db{}.Construct()
-	model.Update(resource, item, true)
+	upd, err := provider.Content{}.Construct().Update(contentType, resource, item, true)
 	data := make(map[string]interface{})
 	data["success"] = true
+	data["data"] = upd
+
+	if err != nil {
+		data["success"] = false
+		data["error"] = err
+	}
 
 	return c.RenderJSON(data)
 }
 
-func (c Rest) Put(domain string, resource string) revel.Result {
-	model := base.Model{}
+func (c Rest) Put(contentType string, resource string) revel.Result {
+	cf := auth.ContentConf{}.GetContentConf(contentType)
+
+	if !cf.HasAccess(c.Request.Header, "update") {
+		return c.NotFound("Unable to access page")
+	}
+
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
-	model.Domain = domain
-	model.Datastore = provider.Db{}.Construct()
-	m, err := model.Update(resource, item, false)
+	upd, err := provider.Content{}.Construct().Update(contentType, resource, item, false)
 	data := make(map[string]interface{})
 	data["success"] = true
+	data["data"] = upd
 
 	if err != nil {
 		data["success"] = false
 		data["error"] = err.Error()
-		data["data"] = make([]map[string]interface{}, 0)
 	}
-
-	data["data"] = m.Entity
 
 	return c.RenderJSON(data)
 }
 
-func (c Rest) Post(domain string) revel.Result {
-	cf := auth.ContentConf{}.GetContentConf(domain)
+// Post handles an HTTP POST request from the server by creating a brand new content resource.
+// The @contentType parameter tells us the type of content that we are creating.
+// It returns back a json array with a succes message and the data when a new item is created.
+// It will return an appropriate error code and message when the user either didn't have enough access or the system couldn't create the new content resource.
+func (c Rest) Post(contentType string) revel.Result {
+	cf := auth.ContentConf{}.GetContentConf(contentType)
 
 	if !cf.HasAccess(c.Request.Header,"write") {
 		return c.NotFound("Unable to access page")
 	}
 
-	model := base.Model{}
-	log.Print(cf.Fields)
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
-	log.Print(item)
-	model.Domain = domain
-	model.Fields = cf.Fields
-	model.Files = c.Params.Files
-	model.FileManager = provider.Filemanager{}.Construct()
-	model.Datastore = provider.Db{}.Construct()
-	model.Chain = provider.ChainProvider{}.Construct()
-	model.Add(item)
+	cnt, err := provider.Content{}.Construct().Add(contentType, item, c.Params.Files, cf.Fields)
+	data := make(map[string]interface{})
+	data["success"] = true
+	data["data"] = cnt
+
+	if err != nil {
+		data["error"] = err
+	}
 
 	return c.RenderJSON(item)
 }
 
-func (c Rest) Index(domain string) revel.Result {
-	cf := auth.ContentConf{}.GetContentConf(domain)
+func (c Rest) Index(contentType string) revel.Result {
+	cf := auth.ContentConf{}.GetContentConf(contentType)
 
 	if cf.Fields == nil {
 		return c.NotFound("Either content type doesn't exist or wasnt able to parse fields correctly")
 	}
 
 	if !cf.HasAccess(c.Request.Header,"read") {
-		return c.NotFound("Unable to access page")
+		return c.NotFound("Insufficient access")
 	}
 
-	model := base.Model{}
-	model.Domain = domain
-	model.Fields = cf.Fields
-	model.Datastore = provider.Db{}.Construct()
 	attrs := make(map[string]interface{})
 
 	for k, v := range c.Params.Values {
@@ -133,32 +139,28 @@ func (c Rest) Index(domain string) revel.Result {
 			attrs[k] = b
 		}
 	}
+	cnt, err := provider.Content{}.Construct().All(contentType, attrs, cf.Fields)
 
-	log.Print(attrs)
-	res := model.All(attrs)
+	if err != nil {
+		return c.NotFound(err.Error())
+	}
 
-	return c.RenderJSON(res)
+	return c.RenderJSON(cnt)
 }
 
-func (c Rest) Delete(domain string, resource string) revel.Result {
-	cf := auth.ContentConf{}.GetContentConf(domain)
+func (c Rest) Delete(contentType string, resource string) revel.Result {
+	cf := auth.ContentConf{}.GetContentConf(contentType)
 	data := make(map[string]interface{})
 
 	if !cf.HasAccess(c.Request.Header, "delete") {
 		return c.NotFound("unable to access page")
 	}
-
-	model := base.Model{}
-	model.Domain = domain
-	model.Datastore = provider.Db{}.Construct()
-
-	if model.Delete(resource) {
+	success, err := provider.Content{}.Construct().Delete(contentType, resource)
+	if success {
 		data["success"] = true
 
 		return c.RenderJSON(data)
 	}
 
-	data["success"] = false
-
-	return c.RenderJSON(data)
+	return c.NotFound(err.Error())
 }

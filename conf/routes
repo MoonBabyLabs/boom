@@ -9,23 +9,23 @@ module:testrunner
 
 GET     /                                                       App.Index
 
-POST    /:domain                                               Rest.Post
-#POST   /api/:version/:domain/:resource/:relation/:relationResource         Rest.PostRelation
+POST    /:contentType                                               Rest.Post
+#POST   /api/:version/:contentType/:resource/:relation/:relationResource         Rest.PostRelation
 
-GET     /:domain/:resource                                     Rest.Get
-#GET    /api/:version/:domain/:resource/:relation/:relationResource         Rest.GetRelation
+GET     /:contentType/:resource                                     Rest.Get
+#GET    /api/:version/:contentType/:resource/:relation/:relationResource         Rest.GetRelation
 
-GET     /:domain                                               Rest.Index
-#GET    /api/:version/:domain/:resource/:relation                           Rest.IndexRelation
+GET     /:contentType                                               Rest.Index
+#GET    /api/:version/:contentType/:resource/:relation                           Rest.IndexRelation
 
-PUT     /:domain/:resource                                     Rest.Put
-#PUT    /api/:version/:domain/:resource/:relation/:relationResource         Rest.PutRelation
+PUT     /:contentType/:resource                                     Rest.Put
+#PUT    /api/:version/:contentType/:resource/:relation/:relationResource         Rest.PutRelation
 
-PATCH   /:domain/:resource                                     Rest.Patch
-#PATCH  /api/:version/:domain/:resource/:relation/:relationResource         Rest.PatchRelation
+PATCH   /:contentType/:resource                                     Rest.Patch
+#PATCH  /api/:version/:contentType/:resource/:relation/:relationResource         Rest.PatchRelation
 
-DELETE  /:domain/:resource                                     Rest.Delete
-#DELETE /api/:version/:domain/:resource/:relation/:relationResource         Rest.DeleteRelation
+DELETE  /:contentType/:resource                                     Rest.Delete
+#DELETE /api/:version/:contentType/:resource/:relation/:relationResource         Rest.DeleteRelation
 
 GET    /public/*filepath            Static.Serve("public")
 GET    /editor                      Static.Serve("public/editor/index.html")
