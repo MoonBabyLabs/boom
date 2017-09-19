@@ -33,8 +33,9 @@ func (c Rest) Get(domain string, resource string) revel.Result {
 	model.Domain = domain
 	model.Fields = cf.Fields
 	model.Datastore = provider.Db{}.Construct()
+	history := c.Params.Query.Get("history") != ""
 
-	return c.RenderJSON(model.Find(resource))
+	return c.RenderJSON(model.Find(resource, history))
 }
 
 // Options provides a route request for OPTIONS based routes.
@@ -72,9 +73,17 @@ func (c Rest) Put(domain string, resource string) revel.Result {
 	c.Params.BindJSON(&item)
 	model.Domain = domain
 	model.Datastore = provider.Db{}.Construct()
-	model.Update(resource, item, false)
+	m, err := model.Update(resource, item, false)
 	data := make(map[string]interface{})
 	data["success"] = true
+
+	if err != nil {
+		data["success"] = false
+		data["error"] = err.Error()
+		data["data"] = make([]map[string]interface{}, 0)
+	}
+
+	data["data"] = m.Entity
 
 	return c.RenderJSON(data)
 }
@@ -96,6 +105,7 @@ func (c Rest) Post(domain string) revel.Result {
 	model.Files = c.Params.Files
 	model.FileManager = provider.Filemanager{}.Construct()
 	model.Datastore = provider.Db{}.Construct()
+	model.Chain = provider.ChainProvider{}.Construct()
 	model.Add(item)
 
 	return c.RenderJSON(item)

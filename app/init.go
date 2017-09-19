@@ -45,15 +45,16 @@ func init() {
 }
 
 func ParseJsonBodyFilter(c *revel.Controller, fc []revel.Filter) {
-	content, err := json.Marshal(c.Request.Body)
-
-	if err != nil {
-		log.Print(err)
+	var b []byte
+	c.Request.Body.Read(b)
+	log.Print(b)
+	log.Print(c.Params.JSON)
+	if len(b) > 0 {
+		cd, _ := json.Marshal(c.Params.JSON)
+		c.Params.JSON = cd
 	}
 
-	if content != nil && err != nil && c.Params.JSON != nil {
-		c.Params.JSON = content
-	}
+	log.Print(b)
 
 	fc[0](c, fc[1:])
 }

@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"go/build"
+	"sort"
 )
 
 type Tiedot struct {
@@ -27,7 +28,6 @@ func (td Tiedot) Init(dbName string, dbConnection string) Contract {
 }
 
 func (td Tiedot) SetDB(dbName string, host string) interface{} {
-
 	_, err := os.Stat(host)
 
 	if err != nil {
@@ -50,8 +50,7 @@ func (td Tiedot) Connect(dbName string, connectionName string) Contract {
 	dbLoc := build.Default.GOPATH + connectionName
 
 	if err != nil {
-		err2 := os.Mkdir(dbLoc, 0755)
-		log.Print(err2)
+		os.Mkdir(dbLoc, 0755)
 	}
 
 	// (Create if not exist) open a database
@@ -69,7 +68,6 @@ func (td Tiedot) Connect(dbName string, connectionName string) Contract {
 func (td Tiedot) Find(collection string, resource string) map[string]interface{} {
 	id, convErr := strconv.Atoi(resource)
 
-	log.Print(id)
 	if convErr != nil {
 		return make(map[string]interface{})
 	}
@@ -82,8 +80,6 @@ func (td Tiedot) Find(collection string, resource string) map[string]interface{}
 	if err != nil {
 		panic(err)
 	}
-
-	log.Print(item)
 
 	item["id"] = id
 
@@ -99,8 +95,6 @@ func (td Tiedot) Insert(collection string, resource map[string]interface{}) bool
 
 
 func (td Tiedot) SetDomain(domain string) Contract {
-	log.Print(domain)
-	log.Print(td.DbName)
 	err := td.DB.Create(domain)
 
 	if err != nil {
@@ -154,7 +148,6 @@ func (td Tiedot) Update(collection string, resource string, content map[string]i
 func (td Tiedot) SetIndexes(collection string, fullQuery Query) {
 	log.Print(fullQuery)
 	col := td.DB.Use(collection)
-	log.Print(fullQuery.Where)
 	index := make([]string, 0)
 	index = append(index, fullQuery.Where.Reference)
 	col.Index(index)
@@ -190,18 +183,22 @@ func (td Tiedot) All(collection string, query Query) []map[string]interface{} {
 
 	final := td.Items
 
+	if query.Order == "" {
+		query.Order = "created_at"
+	}
+
 	// Fetch the results
 	for id := range queryResult {
 		readBack, err := fc.Read(id)
 		readBack["id"] = strconv.Itoa(id)
+		delete(readBack, "_chain")
+
 		if nil != err {
 			panic(err)
 		}
-		final = append(final, readBack)
-		log.Printf("Query returned document %v\n", readBack)
-	}
 
-	log.Print(final)
+		final = append(final, readBack)
+	}
 
 	return final
 }
