@@ -96,18 +96,26 @@ func (b BoomBlock) SetAuthor(p string, g string, m string) BlockHandler {
 	return b
 }
 
+func (block BoomBlock) isHashValid(hash string) bool {
+	validStart := hash[:2]
+	return validStart == "00"
+}
+
 func (block BoomBlock) GenHash() []byte {
 	sha := sha256.New()
-	index := []byte(strconv.Itoa(block.Index()))
+	index := strconv.Itoa(block.Index())
 	auth, _ := json.Marshal(block.Author())
-	sha.Write(index)
-	sha.Write([]byte(":"))
-	sha.Write(auth)
-	sha.Write([]byte(":"))
-	sha.Write([]byte(block.PreviousHash()))
-	sha.Write([]byte(":"))
-	sha.Write(block.data)
-	log.Print(sha.Sum(nil))
+	newAuth := fmt.Sprint(auth)
+	nonce := 0
+	hash := "aaaa"
+	data := fmt.Sprintf("%x", block.data)
+
+	for !block.isHashValid(hash) {
+		nonce++
+		sha.Write([]byte(index + newAuth + block.PreviousHash() + data + strconv.Itoa(nonce)))
+		newHash := sha.Sum(nil)
+		hash = fmt.Sprintf("%x", newHash)
+	}
 
 	return sha.Sum(nil)
 }

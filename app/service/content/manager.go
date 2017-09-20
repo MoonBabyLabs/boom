@@ -5,6 +5,7 @@ import (
 	"github.com/MoonBabyLabs/boom/app/datastore"
 	"github.com/MoonBabyLabs/boom/app/service/filemanager"
 	"mime/multipart"
+	"github.com/MoonBabyLabs/boom/app/service/uuid"
 )
 
 
@@ -44,4 +45,8 @@ type Manager interface {
 	FileManager() filemanager.Contract
 
 	SetFileManager(fileManager filemanager.Contract) Manager
+
+	SetUuidGenerator(generator uuid.Generator) Manager
+
+	UuidGenerator() uuid.Generator
 }

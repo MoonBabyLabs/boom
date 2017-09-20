@@ -9,6 +9,7 @@ import (
 	"github.com/MoonBabyLabs/boom/app/datastore"
 	"github.com/MoonBabyLabs/boom/app/service/filemanager"
 	"mime/multipart"
+	"github.com/MoonBabyLabs/boom/app/service/uuid"
 )
 
 type Default struct {
@@ -17,6 +18,7 @@ type Default struct {
 	fields []map[string]map[string]interface{}
 	fileManager filemanager.Contract
 	domain string
+	uuidGenerator uuid.Generator
 }
 
 func (m Default) Find(contentType string, resource string, revHistory bool) (map[string]interface{}, error) {
@@ -39,9 +41,13 @@ func (m Default) Add(
 	entity["updated_at"] = time.Now()
 	entity["created_at"] = time.Now()
 	baseEnt, _ := json.Marshal(entity)
-	block := chain.BoomBlock{}.SetTimestamp(time.Now().Unix()).SetIndex(0).SetData(baseEnt).SetAuthor("", "", "asdf3333asdf")
+	block := chain.BoomBlock{}.
+		SetTimestamp(time.Now().Unix()).
+		SetIndex(0).SetData(baseEnt).
+		SetAuthor("", "", "asdf3333asdf")
 	entity["_chain"] = m.Chain().AddBlock(block).Blocks()
-	entity["_rev"] = m.Chain().Block().HashString()
+	entity["_rev"] = block.HashString()
+	entity["_cid"] = m.UuidGenerator().New(block.HashString())
 
 	for _, v := range fields {
 		for p := range v {
@@ -167,6 +173,16 @@ func (m Default) SetFileManager(fileManager filemanager.Contract) Manager {
 	m.fileManager = fileManager
 
 	return m
+}
+
+func (m Default) SetUuidGenerator(generator uuid.Generator) Manager {
+	m.uuidGenerator = generator
+
+	return m
+}
+
+func (m Default) UuidGenerator() uuid.Generator {
+	return m.uuidGenerator
 }
 
 // updateChain is a convenience function to help with updating a chain.
