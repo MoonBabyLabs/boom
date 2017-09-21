@@ -22,7 +22,7 @@ type Default struct {
 }
 
 func (m Default) Find(contentType string, resource string, revHistory bool) (map[string]interface{}, error) {
-	ent := m.Datastore().Find(contentType, resource)
+	ent := m.Datastore().Find(contentType, resource, revHistory)
 
 	if ent["_chain"] != nil && !revHistory {
 		delete(ent, "_chain")
@@ -79,7 +79,8 @@ func (m Default) Delete(contentType string, resource string) (bool, error) {
 func (m Default) All(
 	contentType string,
 	attributes map[string]interface{},
-	fields []map[string]map[string]interface{}) ([]map[string]interface{}, error) {
+	fields []map[string]map[string]interface{},
+	revHistory bool) ([]map[string]interface{}, error) {
 	q := datastore.Query{}
 	where := datastore.WhereQuery{}
 
@@ -96,7 +97,7 @@ func (m Default) All(
 		q.Where = where
 	}
 
-	cnt := m.Datastore().All(contentType, q)
+	cnt := m.Datastore().All(contentType, q, revHistory)
 
 	if len(cnt) > 0 {
 		return cnt, nil
@@ -112,7 +113,7 @@ func (m Default) Update(
 	content map[string]interface{},
 	patch bool) (map[string]interface{}, error) {
 
-	item := m.Datastore().Find(contentType, resource)
+	item := m.Datastore().Find(contentType, resource, true)
 
 	if len(item) == 0 {
 		return content, errors.New("Could not find resource. Please confirm you have the correct key")

@@ -14,7 +14,6 @@ type Rest struct {
 	*revel.Controller
 }
 
-
 // Get provides the access point for GET requests to a single content resource.
 // @param contentType is a string that represents the content type you would like to access.
 // @param resource is the identifier for the desired resource item.
@@ -26,14 +25,14 @@ func (c Rest) Get(contentType string, resource string) revel.Result {
 		return c.NotFound("Unable to access resource")
 	}
 
-	history := c.Params.Query.Get("history") != ""
-	cnt, err := provider.Content{}.Construct().Find(contentType, resource, history)
+	noHistory := c.Params.Query.Get("history") == "false"
+	cnt, err := provider.Content{}.Construct().Find(contentType, resource, !noHistory)
 
 	if err != nil {
 		return c.NotFound(err.Error())
 	}
 
-	return c.RenderJSON(cnt)
+	return c.renderContent(cnt, c.Params.Query.Get("_format"))
 }
 
 // Options provides a route request for OPTIONS based routes.
@@ -139,7 +138,9 @@ func (c Rest) Index(contentType string) revel.Result {
 			attrs[k] = b
 		}
 	}
-	cnt, err := provider.Content{}.Construct().All(contentType, attrs, cf.Fields)
+
+	noHistory := c.Params.Query.Get("history") == "false"
+	cnt, err := provider.Content{}.Construct().All(contentType, attrs, cf.Fields, !noHistory)
 
 	if err != nil {
 		return c.NotFound(err.Error())
@@ -163,4 +164,28 @@ func (c Rest) Delete(contentType string, resource string) revel.Result {
 	}
 
 	return c.NotFound(err.Error())
+}
+
+// renderContent runs through a switch case to parse and return the content format filled in with the desired data.
+// Parameter @cnt is a map[string]map[string]interface{} which will get parsed into the desired response.
+// Param @resType is a string that tells us what type of response format that we need.
+// @todo may need to refactor this out as response format types get larger and move to a more polymorphic approach instead of a switch case
+// @todo need to add more response formats.
+//
+// Available resFormats at the moment: json, xml
+func (c Rest) renderContent(cnt map[string]interface{}, resType string) revel.Result {
+	var res revel.Result
+	switch resType {
+	case "json-hal":
+		break
+	case "xml":
+		res = c.RenderXML(cnt)
+		break
+	case "html" :
+		break
+	default:
+		res = c.RenderJSON(cnt)
+	}
+
+	return res
 }

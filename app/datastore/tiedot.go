@@ -64,25 +64,10 @@ func (td Tiedot) Connect(dbName string, connectionName string) Contract {
 	return td
 }
 
-func (td Tiedot) Find(collection string, resource string) map[string]interface{} {
-	id, convErr := strconv.Atoi(resource)
+func (td Tiedot) Find(collection string, resource string, revHistory bool) map[string]interface{} {
+	resList := td.All(collection, Query{Where:WhereQuery{Reference:"_cid", Value:resource}}, revHistory)
 
-	if convErr != nil {
-		return make(map[string]interface{})
-	}
-
-	td.DB.Create(collection)
-	col := td.DB.Use(collection)
-
-	item, err := col.Read(id)
-
-	if err != nil {
-		panic(err)
-	}
-
-	item["id"] = id
-
-	return item
+	return resList[0]
 }
 
 func (td Tiedot) Insert(collection string, resource map[string]interface{}) bool {
@@ -145,14 +130,13 @@ func (td Tiedot) Update(collection string, resource string, content map[string]i
 }
 
 func (td Tiedot) SetIndexes(collection string, fullQuery Query) {
-	log.Print(fullQuery)
 	col := td.DB.Use(collection)
 	index := make([]string, 0)
 	index = append(index, fullQuery.Where.Reference)
 	col.Index(index)
 }
 
-func (td Tiedot) All(collection string, query Query) []map[string]interface{} {
+func (td Tiedot) All(collection string, query Query, revHistory bool) []map[string]interface{} {
 	td.DB.Create(collection)
 	fc := td.DB.Use(collection)
 	td.SetIndexes(collection, query)
@@ -182,15 +166,14 @@ func (td Tiedot) All(collection string, query Query) []map[string]interface{} {
 
 	final := td.Items
 
-	if query.Order == "" {
-		query.Order = "created_at"
-	}
-
 	// Fetch the results
 	for id := range queryResult {
 		readBack, err := fc.Read(id)
 		readBack["id"] = strconv.Itoa(id)
-		delete(readBack, "_chain")
+
+		if !revHistory {
+			delete(readBack, "_chain")
+		}
 
 		if nil != err {
 			panic(err)

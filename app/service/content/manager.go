@@ -26,7 +26,8 @@ type Manager interface {
 	All(
 		contentType string,
 		attributes map[string]interface{},
-		fields []map[string]map[string]interface{}) ([]map[string]interface{}, error)
+		fields []map[string]map[string]interface{},
+		revHistory bool) ([]map[string]interface{}, error)
 
 	Update(
 		group string,

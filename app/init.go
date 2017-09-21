@@ -1,10 +1,10 @@
 package app
 
 import (
-	"github.com/revel/revel"
-	"strings"
-	"log"
 	"encoding/json"
+	"github.com/revel/revel"
+	"log"
+	"strings"
 )
 
 var (
@@ -19,8 +19,8 @@ func init() {
 	// Filters is the default set of global filters.
 	revel.Filters = []revel.Filter{
 		revel.PanicFilter,             // Recover from panics and display an error page instead.
-		ValidateDomainBasePath,	   	   // We don't want anyone trying to snake into the api without having the write path.
-		RemoveDomainBasePath,	   	   // We've validated the path. Now lets set the needed api routes
+		ValidateDomainBasePath,        // We don't want anyone trying to snake into the api without having the write path.
+		RemoveDomainBasePath,          // We've validated the path. Now lets set the needed api routes
 		revel.RouterFilter,            // Use the routing table to select the right Action
 		revel.FilterConfiguringFilter, // A hook for adding or removing per-Action filters.
 		revel.ParamsFilter,            // Parse parameters into Controller.Params.
@@ -32,9 +32,8 @@ func init() {
 		revel.InterceptorFilter,       // Run interceptors around the action.
 		revel.CompressFilter,          // Compress the result.
 		ParseJsonBodyFilter,
-		revel.ActionInvoker,           // Invoke the action.
+		revel.ActionInvoker, // Invoke the action.
 	}
-
 
 	// register startup functions with OnAppStart
 	// revel.DevMode and revel.RunMode only work inside of OnAppStart. See Example Startup Script
@@ -42,6 +41,15 @@ func init() {
 	// revel.OnAppStart(ExampleStartupScript)
 	// revel.OnAppStart(InitDB)
 	// revel.OnAppStart(FillCache)
+}
+
+func SetResponseFormat(c *revel.Controller, fc []revel.Filter) {
+	contentType := c.Request.Header.Get("content-type")
+
+	if contentType == "" {
+		contentType = revel.Config.StringDefault("response.content.type", "json")
+	}
+
 }
 
 func ParseJsonBodyFilter(c *revel.Controller, fc []revel.Filter) {
@@ -88,7 +96,6 @@ func RemoveDomainBasePath(c *revel.Controller, fc []revel.Filter) {
 	fc[0](c, fc[1:])
 }
 
-
 // HeaderFilter adds common security headers
 // not sure if it can go in the same filter or not
 var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
@@ -109,12 +116,11 @@ var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
 
 		c.Response.Out.Header().Add(
 			"Access-Control-Allow-Origin",
-			protocol + c.Request.Host)
+			protocol+c.Request.Host)
 
 		if accessHostsConfig == "*" {
 			c.Response.Out.Header().Set("Access-Control-Allow-Origin", "*")
 		}
-
 
 		c.Response.Out.Header().Add("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE, OPTIONS")
 		c.Response.Out.Header().Add("Access-Control-Allow-Headers", "content-type,write,delete,update,publish")
@@ -122,7 +128,6 @@ var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
 
 	fc[0](c, fc[1:]) // Execute the next filter stage.
 }
-
 
 func inStringArray(needle string, haystack []string) bool {
 	for _, item := range haystack {

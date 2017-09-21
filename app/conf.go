@@ -1,6 +1,4 @@
 package app
 
-type Config struct{
-
+type Config struct {
 }
-
