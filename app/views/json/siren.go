@@ -34,7 +34,11 @@ type SirenResponse struct{
 	Entities []SirenEntity
 }
 
-func (s SirenResponse) Run(cnt map[string]interface{}, fields []map[string]map[string]interface{}, urlRoute string, cType string) views.Runner {
+// Run returns a new view.Runner that can be used to set for specific view displays.
+func (s SirenResponse) Run(
+	cnt map[string]interface{},
+	fields []map[string]map[string]interface{},
+	urlRoute string, cType string) views.Runner {
 	res := SirenResponse{}
 	res.Properties = make(map[string]interface{})
 	res.Class = make([]string, 1)
