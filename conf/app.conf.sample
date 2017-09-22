@@ -121,7 +121,7 @@ access.hosts = http://localhost:9000, https://www.example.com
 # The base path ends when your content type starts.
 # ex: http://example.com/api/v1/post/3322323    => domain.base.path = /api/v1 | The post begins the content type
 # ex: http://example.com/content/api/car        => domain.base.path = /content/api | The car begins the content type
-domain.route.base.path = /api/v1
+domain.base.path = /api/v1
 
 ################################################################################
 

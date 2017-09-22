@@ -7,7 +7,12 @@ import (
 	"github.com/revel/revel"
 	"github.com/MoonBabyLabs/boom/app/provider"
 	"github.com/MoonBabyLabs/boom/app/auth"
+	"os/exec"
+	"strings"
+	"github.com/MoonBabyLabs/boom/app"
 )
+
+type Blah exec.Cmd
 
 
 type Rest struct {
@@ -32,7 +37,13 @@ func (c Rest) Get(contentType string, resource string) revel.Result {
 		return c.NotFound(err.Error())
 	}
 
-	return c.renderContent(cnt, c.Params.Query.Get("_format"))
+	fmt := c.Request.Header.Get("Accept")
+
+	if fmt == "" {
+		fmt = c.Params.Query.Get("_format")
+	}
+
+	return c.renderContent(cnt, fmt, cf.Fields, contentType)
 }
 
 // Options provides a route request for OPTIONS based routes.
@@ -146,7 +157,10 @@ func (c Rest) Index(contentType string) revel.Result {
 		return c.NotFound(err.Error())
 	}
 
-	return c.RenderJSON(cnt)
+	resCont := make(map[string]interface{})
+	resCont["_collection"] = cnt
+
+	return c.renderContent(resCont, "application/vnd.siren+json", cf.Fields, contentType)
 }
 
 func (c Rest) Delete(contentType string, resource string) revel.Result {
@@ -173,19 +187,32 @@ func (c Rest) Delete(contentType string, resource string) revel.Result {
 // @todo need to add more response formats.
 //
 // Available resFormats at the moment: json, xml
-func (c Rest) renderContent(cnt map[string]interface{}, resType string) revel.Result {
-	var res revel.Result
-	switch resType {
-	case "json-hal":
-		break
-	case "xml":
-		res = c.RenderXML(cnt)
-		break
-	case "html" :
-		break
-	default:
-		res = c.RenderJSON(cnt)
+func (c Rest) renderContent(cnt map[string]interface{}, resType string, fields []map[string]map[string]interface{}, ctype string) revel.Result {
+
+	base := revel.Config.StringDefault("domain.base.url", "") + "/" + revel.Config.StringDefault("domain.base.path", "/")
+	v := app.Views{}
+
+	if cnt["_collection"] != nil {
+		cc := cnt["_collection"].([]map[string]interface{})
+		fc := make([]interface{}, len(cc))
+		for k, item := range cc {
+			fc[k] =v.Get(resType).Run(item, fields, base, ctype)
+		}
+
+		if strings.Contains(resType, "json") {
+			return c.RenderJSON(fc)
+		} else if strings.Contains(resType, "xml") {
+			return c.RenderXML(fc)
+		} else {
+			return c.Render(fc)
+		}
 	}
 
-	return res
+	if strings.Contains(resType, "json") {
+		return c.RenderJSON(v.Get(resType).Run(cnt, fields, base, ctype))
+	} else if strings.Contains(resType, "xml") {
+		return c.RenderXML(v.Get(resType).Run(cnt, fields, base, ctype))
+	} else {
+		return c.Render(v.Get(resType).Run(cnt, fields, base, ctype))
+	}
 }
