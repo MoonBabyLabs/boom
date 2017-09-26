@@ -6,6 +6,7 @@ import (
 	"github.com/MoonBabyLabs/boom/app/service/filemanager"
 	"mime/multipart"
 	"github.com/MoonBabyLabs/boom/app/service/uuid"
+	"github.com/MoonBabyLabs/boom/app/service/publisher"
 )
 
 
@@ -48,6 +49,8 @@ type Manager interface {
 	SetFileManager(fileManager filemanager.Contract) Manager
 
 	SetUuidGenerator(generator uuid.Generator) Manager
+
+	SetPublishers(publishers []publisher.Manager) Manager
 
 	UuidGenerator() uuid.Generator
 }

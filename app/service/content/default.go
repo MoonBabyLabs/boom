@@ -10,12 +10,14 @@ import (
 	"github.com/MoonBabyLabs/boom/app/service/filemanager"
 	"mime/multipart"
 	"github.com/MoonBabyLabs/boom/app/service/uuid"
+	"github.com/MoonBabyLabs/boom/app/service/publisher"
 )
 
 type Default struct {
 	chain chain.BoomChainHandler
 	store datastore.Contract
 	fields []map[string]map[string]interface{}
+	publisher []publisher.Manager
 	fileManager filemanager.Contract
 	domain string
 	uuidGenerator uuid.Generator
@@ -58,10 +60,14 @@ func (m Default) Add(
 	}
 
 	if m.Datastore().Insert(contentType, entity) {
+		for _, p := range m.publisher {
+			p.Insert(contentType, entity)
+		}
+
 		return entity, nil
 	}
 
-	return entity, errors.New("Failed to insert content into database")
+	return entity, errors.New("Failed to add new content item")
 }
 
 // Delete removes an instance of a content type
@@ -69,6 +75,10 @@ func (m Default) Delete(contentType string, resource string) (bool, error) {
 	success := m.Datastore().Delete(contentType, resource)
 
 	if success {
+		for _, p :=range m.publisher {
+			p.Delete(contentType, resource)
+		}
+
 		return success, nil
 	}
 
@@ -135,7 +145,10 @@ func (m Default) Update(
 	content["_chain"] = newChn
 	content["_rev"] = hash
 	m.Datastore().Update(contentType, resource, content, patch)
-	delete(content, "_chain")
+
+	for _, p := range m.publisher {
+		p.Update(contentType, content, patch)
+	}
 
 	return content, nil
 }
@@ -178,6 +191,12 @@ func (m Default) SetFileManager(fileManager filemanager.Contract) Manager {
 
 func (m Default) SetUuidGenerator(generator uuid.Generator) Manager {
 	m.uuidGenerator = generator
+
+	return m
+}
+
+func (m Default) SetPublishers(publishers []publisher.Manager) Manager {
+	m.publisher = publishers
 
 	return m
 }

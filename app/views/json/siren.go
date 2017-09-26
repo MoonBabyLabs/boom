@@ -3,6 +3,7 @@ package json
 import (
 	"strings"
 	"github.com/MoonBabyLabs/boom/app/views"
+	"log"
 )
 
 type SirenLink struct {
@@ -62,6 +63,7 @@ func (s SirenResponse) Run(
 		res.Links = append(res.Links, selfLink)
 	}
 
+	// Lets add the revision chain
 	if cnt["_chain"] != nil {
 		chn := cnt["_chain"].([]interface{})
 
@@ -89,6 +91,7 @@ func (s SirenResponse) Run(
 		}
 	}
 
+	// Lets add the properties and media
 	for _, v := range fields {
 		for f, d := range v {
 			if cnt[f] == nil {
@@ -104,22 +107,32 @@ func (s SirenResponse) Run(
 			ft := cntType .(string)
 
 			if strings.Contains(ft, "[]link") {
-				al := cnt[f].([]map[string]string)
+				log.Print(cnt[f])
+				al := cnt[f].([]interface{})
+
 				for _, l := range al {
+					nl := l.(map[string]interface{})
 					newLink := SirenLink{}
-					newLink.Href = l["href"]
-					newLink.Title = l["title"]
-					newLink.Rel = append(newLink.Rel, "about")
+					newLink.Href, _ = nl["href"].(string)
+					newLink.Title, _ = nl["title"].(string)
+					newLink.Rel = make([]string, 1)
+
+					if nl["rel"] != nil {
+						newLink.Rel[0] = nl["rel"].(string)
+					} else {
+						newLink.Rel[0] = "about"
+					}
+
 					res.Links = append(res.Links, newLink)
 				}
 
-				continue
 			} else if strings.Contains(ft, "link") {
 				mpf := cnt[f].(map[string]string)
 				newLink := SirenLink{}
 				newLink.Href = mpf["href"]
 				newLink.Title = mpf["title"]
-				newLink.Rel = append(newLink.Rel, "about")
+				newLink.Rel = make([]string, 1)
+				newLink.Rel[0] = "about"
 				res.Links = append(res.Links, newLink)
 			} else if strings.Contains(ft, "relation") {
 
