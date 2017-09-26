@@ -104,36 +104,46 @@ func (s SirenResponse) Run(
 				res.Properties[f] = cnt[f]
 			}
 
-			ft := cntType .(string)
+			ft := cntType.(string)
+			log.Print(ft)
 
-			if strings.Contains(ft, "[]link") {
+			if strings.Contains(ft, "link") {
 				log.Print(cnt[f])
-				al := cnt[f].([]interface{})
+				al, isSlice := cnt[f].([]interface{})
 
-				for _, l := range al {
-					nl := l.(map[string]interface{})
-					newLink := SirenLink{}
-					newLink.Href, _ = nl["href"].(string)
-					newLink.Title, _ = nl["title"].(string)
-					newLink.Rel = make([]string, 1)
+				// Lets handle for non-sliced links
+				if !isSlice {
 
-					if nl["rel"] != nil {
-						newLink.Rel[0] = nl["rel"].(string)
-					} else {
-						newLink.Rel[0] = "about"
+					mpf, isMap := cnt[f].(map[string]interface{})
+
+					if isMap {
+						log.Panic("Cannot resolve this link structure for siren:", cnt[f])
 					}
 
+					newLink := SirenLink{}
+					log.Print(mpf)
+					newLink.Href, _ = mpf["href"].(string)
+					newLink.Title, _ = mpf["title"].(string)
+					newLink.Rel = make([]string, 1)
+					newLink.Rel[0] = "about"
 					res.Links = append(res.Links, newLink)
-				}
+				} else {
+					for _, l := range al {
+						nl := l.(map[string]interface{})
+						newLink := SirenLink{}
+						newLink.Href, _ = nl["href"].(string)
+						newLink.Title, _ = nl["title"].(string)
+						newLink.Rel = make([]string, 1)
 
-			} else if strings.Contains(ft, "link") {
-				mpf := cnt[f].(map[string]string)
-				newLink := SirenLink{}
-				newLink.Href = mpf["href"]
-				newLink.Title = mpf["title"]
-				newLink.Rel = make([]string, 1)
-				newLink.Rel[0] = "about"
-				res.Links = append(res.Links, newLink)
+						if nl["rel"] != nil {
+							newLink.Rel[0] = nl["rel"].(string)
+						} else {
+							newLink.Rel[0] = "about"
+						}
+
+						res.Links = append(res.Links, newLink)
+					}
+				}
 			} else if strings.Contains(ft, "relation") {
 
 			} else {
