@@ -123,6 +123,7 @@ func (s SirenResponse) Run(
 					newLink := SirenLink{}
 					log.Print(mpf)
 					href, isHref := mpf["href"].(string)
+					newLink.Href = href
 
 					if !isHref {
 						href, _ := mpf["url"].(string)
@@ -138,7 +139,14 @@ func (s SirenResponse) Run(
 					for _, l := range al {
 						nl := l.(map[string]interface{})
 						newLink := SirenLink{}
-						newLink.Href, _ = nl["href"].(string)
+						href, isHref := nl["href"].(string)
+						newLink.Href = href
+
+						if !isHref {
+							href, _ := nl["url"].(string)
+							newLink.Href = href
+						}
+
 						newLink.Title, _ = nl["title"].(string)
 						newLink.Rel = make([]string, 1)
 
