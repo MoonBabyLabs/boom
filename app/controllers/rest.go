@@ -187,7 +187,11 @@ func (c Rest) Delete(contentType string, resource string) revel.Result {
 // @todo need to add more response formats.
 //
 // Available resFormats at the moment: json, xml
-func (c Rest) renderContent(cnt map[string]interface{}, resType string, fields []map[string]map[string]interface{}, ctype string) revel.Result {
+func (c Rest) renderContent(
+	cnt map[string]interface{},
+	resType string,
+	fields []map[string]map[string]interface{},
+	ctype string) revel.Result {
 
 	base := revel.Config.StringDefault("domain.base.url", "") + "/" + revel.Config.StringDefault("domain.base.path", "/")
 	v := app.Views{}
