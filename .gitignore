@@ -3,8 +3,8 @@ tmp/
 routes/
 conf/app.conf
 .idea
-data/content
-conf/content/*
-!conf/content/*.sample
 *.gitkeep
 public/
+.DS_Store
+conf/kekspace.json
+data/

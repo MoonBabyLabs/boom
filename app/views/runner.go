@@ -1,5 +1,7 @@
 package views
 
+import "github.com/MoonBabyLabs/kek/service"
+
 type Runner interface {
-	Run(cnt map[string]interface{}, fields []map[string]map[string]interface{}, urlRoute string, cType string) Runner
+	Run(cnt service.KekDoc, urlRoute string) Runner
 }

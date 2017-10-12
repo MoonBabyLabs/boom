@@ -1,56 +1,15 @@
 package content
 
 import (
-	"github.com/MoonBabyLabs/boom/app/service/chain"
-	"github.com/MoonBabyLabs/boom/app/datastore"
-	"github.com/MoonBabyLabs/boom/app/service/filemanager"
 	"mime/multipart"
-	"github.com/MoonBabyLabs/boom/app/service/uuid"
-	"github.com/MoonBabyLabs/boom/app/service/publisher"
+	"github.com/MoonBabyLabs/kek/service"
 )
 
 
 type Manager interface {
-	Find(
-		contentType string,
-		resource string,
-		revHistory bool) (map[string]interface{}, error)
-
-	Add(
-		contentType string,
-		items map[string]interface{},
-		files map[string][]*multipart.FileHeader,
-		fields []map[string]map[string]interface{}) (map[string]interface{}, error)
-
-	Delete(contentType, resource string) (bool, error)
-
-	All(
-		contentType string,
-		attributes map[string]interface{},
-		fields []map[string]map[string]interface{},
-		revHistory bool) ([]map[string]interface{}, error)
-
-	Update(
-		group string,
-		resource string,
-		content map[string]interface{},
-		patch bool) (map[string]interface{}, error)
-
-	Chain() chain.BoomChainHandler
-
-	SetChain(handler chain.BoomChainHandler) Manager
-
-	SetDatastore(store datastore.Contract) Manager
-
-	Datastore() datastore.Contract
-
-	FileManager() filemanager.Contract
-
-	SetFileManager(fileManager filemanager.Contract) Manager
-
-	SetUuidGenerator(generator uuid.Generator) Manager
-
-	SetPublishers(publishers []publisher.Manager) Manager
-
-	UuidGenerator() uuid.Generator
+	Find(resource string, revHistory bool) (service.KekDoc, error)
+	Add(attrs map[string]interface{}, files map[string][]*multipart.FileHeader) (service.KekDoc, error)
+	Delete(resource string) error
+	All(attributes map[string]interface{}, limit int, order string, offset int, revHistory bool) ([]service.KekDoc, error)
+	Update(resource string, attrs map[string]interface{}, patch bool) (service.KekDoc, error)
 }

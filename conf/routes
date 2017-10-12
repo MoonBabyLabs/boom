@@ -7,28 +7,22 @@ module:testrunner
 # module:jobs
 
 
-GET     /                                                       App.Index
+GET     /                                                          Rest.Main
+GET /install                                                       App.Install
+GET     /:resource                                               Rest.GetResource
 
-POST    /:contentType                                               Rest.Post
-#POST   /api/:version/:contentType/:resource/:relation/:relationResource         Rest.PostRelation
+## This method may be unnecesary because a resource is universal and can be used in multiple collections. Could be kept for vanity purposes and confirming that the resource is actually within the collection.
+GET     /:collection/:resource                                     Rest.GetCollectionResource
 
-GET     /:contentType/:resource                                     Rest.Get
-#GET    /api/:version/:contentType/:resource/:relation/:relationResource         Rest.GetRelation
+POST    /                                                          Rest.PostResource
+POST    /:collection                                               Rest.PostCollectionResource
 
-GET     /:contentType                                               Rest.Index
-#GET    /api/:version/:contentType/:resource/:relation                           Rest.IndexRelation
+PUT     /:resource                                                 Rest.PutResource
+PATCH   /:resource                                                 Rest.PatchResource
 
-PUT     /:contentType/:resource                                     Rest.Put
-#PUT    /api/:version/:contentType/:resource/:relation/:relationResource         Rest.PutRelation
-
-PATCH   /:contentType/:resource                                     Rest.Patch
-#PATCH  /api/:version/:contentType/:resource/:relation/:relationResource         Rest.PatchRelation
-
-DELETE  /:contentType/:resource                                     Rest.Delete
-#DELETE /api/:version/:contentType/:resource/:relation/:relationResource         Rest.DeleteRelation
+DELETE  /:resource                                                 Rest.DeleteResource
+DELETE  /:collection/:resource                                     Rest.DeleteCollectionResource
 
 GET    /public/*filepath            Static.Serve("public")
-GET    /editor                      Static.Serve("public/editor/index.html")
-GET    /editor/*filepath            Static.Serve("public/editor")
 
 OPTIONS /*                                                  Rest.Options

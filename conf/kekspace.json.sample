@@ -1,0 +1,16 @@
+{
+  "name" : "sample",
+  "owners" : [
+    {
+      "first_name" : "first",
+      "last_name" : "last",
+      "email" : "sampleemail@email.com",
+      "phone" : "333-333-3333",
+      "id" : "333aa332",
+      "city" : "somewhere",
+      "region" : "AFE",
+      "country" : "Miracleslovia",
+      "postal_code" : "33a 32"
+    }
+  ]
+}

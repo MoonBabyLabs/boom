@@ -1,170 +1,108 @@
 package json
 
 import (
-	"strings"
 	"github.com/MoonBabyLabs/boom/app/views"
-	"log"
+	"github.com/MoonBabyLabs/kek/service"
+	"encoding/json"
 )
 
 type SirenLink struct {
-	Rel []string
-	Class []string
-	Href string
-	Title string
-	Type string
+	Rel []string `json:"rel"`
+	Class []string `json:"class"`
+	Href string `json:"href"`
+	Title string `json:"title"`
+	Type string `json:"type"`
 }
 
 type SirenAction struct {
-
+	Name string `json:"name"`
+	Class []string `json:"class"`
+	Method string `json:"method"`
+	Href string `json:"href"`
+	Title string `json:"title"`
+	Type string `json:"type"`
+	Fields []map[string]string `json:"fields"`
 }
 
 type SirenEntity struct {
-	Class []string
-	Properties map[string]interface{}
-	Entities []SirenEntity
-	Links []SirenLink
-	Actions []SirenAction
-	Title string
+	Class []string `json:"class"`
+	Properties map[string]interface{} `json:"properties"`
+	Entities []SirenEntity `json:"entities"`
+	Links []SirenLink  `json:"links"`
+	Actions []SirenAction `json:"actions"`
+	Title string `json:"title"`
 }
 
 type SirenResponse struct{
-	Class []string
-	Properties map[string]interface{}
-	Links []SirenLink
-	Actions []SirenAction
-	Entities []SirenEntity
+	Class []string `json:"class"`
+	Properties map[string]interface{} `json:"properties"`
+	Links []SirenLink `json:"links"`
+	Actions []SirenAction `json:"actions"`
+	Entities []SirenEntity `json:"entities"`
 }
 
 // Run returns a new view.Runner that can be used to set for specific view displays.
-func (s SirenResponse) Run(
-	cnt map[string]interface{},
-	fields []map[string]map[string]interface{},
-	urlRoute string, cType string) views.Runner {
+func (s SirenResponse) Run(cnt service.KekDoc, urlRoute string) views.Runner {
 	res := SirenResponse{}
 	res.Properties = make(map[string]interface{})
-	res.Class = make([]string, 1)
-	res.Class[0] = cType
 	res.Entities = make([]SirenEntity, 0)
-	res.Actions = make([]SirenAction, 0)
-	res.Properties["_cid"] = cnt["_cid"]
-	res.Properties["created_at"] = cnt["created_at"]
-	res.Properties["updated_at"] = cnt["updated_at"]
-	res.Properties["_rev"] = cnt["_rev"]
-	res.Links = make([]SirenLink, 0)
-	cid, cok := cnt["_cid"].(string)
-
-	if cok {
-		slr := make([]string, 1)
-		slr[0] = "self"
-		selfLink := SirenLink{
-			Title: cType + ": " + urlRoute + "/" + cid,
-			Rel: slr,
-		}
-		res.Links = append(res.Links, selfLink)
+	res.Actions = []SirenAction{
+		{Name:"Put Resource", Method:"PUT", Href:"/" + cnt.Id, Class: []string{}, Fields: []map[string]string{}},
+		{Name:"Patch Resource", Method:"PATCH", Href:"/" + cnt.Id, Class: []string{}, Fields: []map[string]string{}},
+		{Name:"Delete Resource", Method:"DELETE", Href:"/" + cnt.Id, Class: []string{}, Fields: []map[string]string{}},
 	}
+	res.Properties["_kid"] = cnt.Id
+	res.Properties["created_at"] = cnt.CreatedAt
+	res.Properties["updated_at"] = cnt.UpdatedAt
+	res.Properties["_rev"] = cnt.Revision
+	res.Links = make([]SirenLink, 0)
+	links := make(map[string]SirenLink)
+	selfLink := SirenLink{
+		Title: cnt.Id,
+		Rel: []string{"self"},
+		Href: urlRoute + "/" + cnt.Id,
+	}
+	res.Links = append(res.Links, selfLink)
 
 	// Lets add the revision chain
-	if cnt["_chain"] != nil {
-		chn := cnt["_chain"].([]interface{})
-
-		for _, cv := range chn {
-			for revK, data := range cv.(map[string]interface{}) {
-				revi := SirenEntity{}
-				revi.Links = make([]SirenLink, 1)
-				li := SirenLink{}
-				li.Rel = make([]string, 1)
-				li.Title = "Revision: " + revK
-				dm, ok := data.(map[string]interface{})
-
-				if ok && dm != nil {
-					revi.Properties = dm
-				}
-
-				if cnt["_cid"] != nil {
-					li.Href = urlRoute + cnt["_cid"].(string) + "?_rev=" + revK
-				}
-				li.Rel[0] = "self"
-				revi.Links = append(revi.Links, li)
-				res.Entities = append(res.Entities, revi)
-				revi.Title = "Revision: " + revK
+	for _, block := range cnt.Chain.Blocks {
+			revi := SirenEntity{}
+			revi.Class = []string{"revision"}
+			revi.Actions = []SirenAction{}
+			revi.Links = []SirenLink{
+				{
+					Rel: []string{"self"},
+					Title: "Revision: " + block.HashString(),
+					Href: "/" + cnt.Id + "?_rev=" + block.HashString(),
+				},
 			}
-		}
+			unmarshalledBlockData := make(map[string]interface{})
+			json.Unmarshal(block.Data, unmarshalledBlockData)
+			revi.Properties = unmarshalledBlockData
+			revi.Title = "Revision: " + block.HashString()
+			res.Entities = append(res.Entities, revi)
 	}
 
 	// Lets add the properties and media
-	for _, v := range fields {
-		for f, d := range v {
-			if cnt[f] == nil {
-				continue
-			}
+	for f, v := range cnt.Attributes {
+		vMap, isMap := v.(map[string]string)
 
-			cntType := d["type"]
-
-			if cntType == nil {
-				res.Properties[f] = cnt[f]
-			}
-
-			ft := cntType.(string)
-			log.Print(ft)
-
-			if strings.Contains(ft, "link") {
-				log.Print(cnt[f])
-				al, isSlice := cnt[f].([]interface{})
-
-				// Lets handle for non-sliced links
-				if !isSlice {
-
-					mpf, isMap := cnt[f].(map[string]interface{})
-
-					if isMap {
-						log.Panic("Cannot resolve this link structure for siren:", cnt[f])
-					}
-
-					newLink := SirenLink{}
-					log.Print(mpf)
-					href, isHref := mpf["href"].(string)
-					newLink.Href = href
-
-					if !isHref {
-						href, _ := mpf["url"].(string)
-						newLink.Href = href
-					}
-
-					newLink.Href = href
-					newLink.Title, _ = mpf["title"].(string)
-					newLink.Rel = make([]string, 1)
-					newLink.Rel[0] = "about"
-					res.Links = append(res.Links, newLink)
-				} else {
-					for _, l := range al {
-						nl := l.(map[string]interface{})
-						newLink := SirenLink{}
-						href, isHref := nl["href"].(string)
-						newLink.Href = href
-
-						if !isHref {
-							href, _ := nl["url"].(string)
-							newLink.Href = href
-						}
-
-						newLink.Title, _ = nl["title"].(string)
-						newLink.Rel = make([]string, 1)
-
-						if nl["rel"] != nil {
-							newLink.Rel[0] = nl["rel"].(string)
-						} else {
-							newLink.Rel[0] = "about"
-						}
-
-						res.Links = append(res.Links, newLink)
-					}
-				}
-			} else if strings.Contains(ft, "relation") {
-
-			} else {
-				res.Properties[f] = cnt[f]
-			}
+		if isMap && vMap["type"] == "link" {
+			newLink := SirenLink{}
+			newLink.Href = vMap["href"]
+			newLink.Class = make([]string, 1)
+			newLink.Class[0] = vMap["class"]
+			newLink.Rel = make([]string, 1)
+			newLink.Rel[0] = vMap["relationship"]
+			newLink.Title = vMap["title"]
+			links[f] = newLink
+		} else {
+			res.Properties[f] = v
 		}
+	}
+
+	for _, link := range links {
+		res.Links = append(res.Links, link)
 	}
 
 	return res

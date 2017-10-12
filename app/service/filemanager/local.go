@@ -22,7 +22,6 @@ func (l Local) Add(
 		for k, _ := range afItem {
 
 			if files[k] != nil {
-				log.Print(files[k])
 				for _, lv := range files[k] {
 					fc, _:= lv.Open()
 					b, rErr := ioutil.ReadAll(fc)

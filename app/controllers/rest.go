@@ -7,13 +7,13 @@ import (
 	"github.com/revel/revel"
 	"github.com/MoonBabyLabs/boom/app/provider"
 	"github.com/MoonBabyLabs/boom/app/auth"
-	"os/exec"
 	"strings"
-	"github.com/MoonBabyLabs/boom/app"
+	"github.com/MoonBabyLabs/boom/app/conf"
+	"github.com/MoonBabyLabs/boom/app/service/content"
+	"github.com/MoonBabyLabs/kek/service"
+	"strconv"
+	"log"
 )
-
-type Blah exec.Cmd
-
 
 type Rest struct {
 	*revel.Controller
@@ -23,7 +23,7 @@ type Rest struct {
 // @param contentType is a string that represents the content type you would like to access.
 // @param resource is the identifier for the desired resource item.
 // Returns a Revel render result
-func (c Rest) Get(contentType string, resource string) revel.Result {
+func (c Rest) GetCollectionResource(contentType string, resource string) revel.Result {
 	cf := auth.ContentConf{}.GetContentConf(contentType)
 
 	if !cf.HasAccess(c.Request.Header, "read") {
@@ -31,19 +31,13 @@ func (c Rest) Get(contentType string, resource string) revel.Result {
 	}
 
 	noHistory := c.Params.Query.Get("history") == "false"
-	cnt, err := provider.Content{}.Construct().Find(contentType, resource, !noHistory)
+	cnt, err := provider.Content{}.Construct().Find(resource, !noHistory)
 
 	if err != nil {
 		return c.NotFound(err.Error())
 	}
 
-	fmt := c.Request.Header.Get("Accept")
-
-	if fmt == "" {
-		fmt = c.Params.Query.Get("_format")
-	}
-
-	return c.renderContent(cnt, fmt, cf.Fields, contentType)
+	return c.renderContent(cnt)
 }
 
 // Options provides a route request for OPTIONS based routes.
@@ -62,87 +56,99 @@ func (c Rest) Options() revel.Result {
 // @param resource is a string that tells us the resource identifier that we are patching.
 // Patch will return back a success method with data on success. It will return an appropriate HTTP error code and message on failuare.
 // @todo Patch should follow some standard that also has description. Needs more research to determine how to handle standardization without overcomplicating it.
-func (c Rest) Patch(contentType string, resource string) revel.Result {
-	cf := auth.ContentConf{}.GetContentConf(contentType)
-
-	if !cf.HasAccess(c.Request.Header, "update") {
-		return c.NotFound("Unable to access page")
-	}
-
+func (c Rest) PatchResource(resource string) revel.Result {
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
-	upd, err := provider.Content{}.Construct().Update(contentType, resource, item, true)
-	data := make(map[string]interface{})
-	data["success"] = true
-	data["data"] = upd
+	log.Print(resource)
+	upd, err := provider.Content{}.Construct().Update(resource, item, true)
 
 	if err != nil {
+		data := make(map[string]interface{})
 		data["success"] = false
 		data["error"] = err
+
+		return c.RenderJSON(data)
 	}
 
-	return c.RenderJSON(data)
+	return c.renderContent(upd)
 }
 
-func (c Rest) Put(contentType string, resource string) revel.Result {
-	cf := auth.ContentConf{}.GetContentConf(contentType)
+// @todo implement
+func (c Rest) PatchCollection() revel.Result {
+	return c.RenderText("implement")
+}
 
-	if !cf.HasAccess(c.Request.Header, "update") {
-		return c.NotFound("Unable to access page")
-	}
-
-	item := make(map[string]interface{})
-	c.Params.BindJSON(&item)
-	upd, err := provider.Content{}.Construct().Update(contentType, resource, item, false)
-	data := make(map[string]interface{})
-	data["success"] = true
-	data["data"] = upd
+// @todo implement
+func (c Rest) GetResource(resource string) revel.Result {
+	revHistory := c.Params.Query.Get("_revisions") != ""
+	kek, err := provider.Content{}.Construct().Find(resource, revHistory)
 
 	if err != nil {
-		data["success"] = false
-		data["error"] = err.Error()
+		return c.RenderError(err)
 	}
 
-	return c.RenderJSON(data)
+	return c.renderContent(kek)
 }
 
-// Post handles an HTTP POST request from the server by creating a brand new content resource.
+func (c Rest) PutResource(resource string) revel.Result {
+	item := make(map[string]interface{})
+	c.Params.BindJSON(&item)
+	upd, err := provider.Content{}.Construct().Update(resource, item, false)
+
+	if err != nil {
+		data := make(map[string]interface{})
+		data["success"] = false
+		data["error"] = err.Error()
+
+		return c.RenderJSON(data)
+	}
+
+	return c.renderContent(upd)
+}
+
+// @todo implement
+func (c Rest) PutCollectionResource(resource string) revel.Result {
+	return c.RenderText("implement")
+}
+
+// PostCollection handles an HTTP POST request from the server by creating a brand new content resource.
 // The @contentType parameter tells us the type of content that we are creating.
 // It returns back a json array with a succes message and the data when a new item is created.
 // It will return an appropriate error code and message when the user either didn't have enough access or the system couldn't create the new content resource.
-func (c Rest) Post(contentType string) revel.Result {
-	cf := auth.ContentConf{}.GetContentConf(contentType)
-
-	if !cf.HasAccess(c.Request.Header,"write") {
-		return c.NotFound("Unable to access page")
-	}
-
-	item := make(map[string]interface{})
-	c.Params.BindJSON(&item)
-	cnt, err := provider.Content{}.Construct().Add(contentType, item, c.Params.Files, cf.Fields)
-	data := make(map[string]interface{})
-	data["success"] = true
-	data["data"] = cnt
-
-	if err != nil {
-		data["error"] = err
-	}
-
-	return c.RenderJSON(item)
+func (c Rest) PostCollectionResource(collection string) revel.Result {
+	return c.RenderText("To do.. need to add collection capability for post")
 }
 
-func (c Rest) Index(contentType string) revel.Result {
-	cf := auth.ContentConf{}.GetContentConf(contentType)
+func (c Rest) PostResource() revel.Result {
+	item := make(map[string]interface{})
+	c.Params.BindJSON(&item)
+	kd, err := content.Default{}.Add(item, c.Params.Files)
 
-	if cf.Fields == nil {
-		return c.NotFound("Either content type doesn't exist or wasnt able to parse fields correctly")
+	if err != nil {
+		return c.RenderError(err)
 	}
 
-	if !cf.HasAccess(c.Request.Header,"read") {
-		return c.NotFound("Insufficient access")
-	}
+	return c.RenderJSON(kd)
+}
 
+// @todo Implement
+func (c Rest) Main() revel.Result {
 	attrs := make(map[string]interface{})
+	limit := c.Params.Query.Get("_limit")
+	history := c.Params.Query.Get("_revisions") != ""
+	order := c.Params.Query.Get("_order")
+	log.Print(order)
+	offset, _ := strconv.Atoi(c.Params.Query.Get("_offset"))
+	c.Params.Query.Del("_order")
+	c.Params.Query.Del("_revisions")
+	c.Params.Query.Del("_limit")
+	c.Params.Query.Del("_offset")
+
+	if limit == "" {
+		limit = "20"
+	}
+
+	intLimit, _ := strconv.Atoi(limit)
 
 	for k, v := range c.Params.Values {
 		for _, b := range v {
@@ -150,34 +156,31 @@ func (c Rest) Index(contentType string) revel.Result {
 		}
 	}
 
-	noHistory := c.Params.Query.Get("history") == "false"
-	cnt, err := provider.Content{}.Construct().All(contentType, attrs, cf.Fields, !noHistory)
+	kekDocs, err := provider.Content{}.Construct().All(attrs, intLimit, order, offset, history)
 
 	if err != nil {
-		return c.NotFound(err.Error())
+		c.RenderError(err)
 	}
 
-	resCont := make(map[string]interface{})
-	resCont["_collection"] = cnt
-
-	return c.renderContent(resCont, "application/vnd.siren+json", cf.Fields, contentType)
+	return c.RenderJSON(kekDocs)
 }
 
-func (c Rest) Delete(contentType string, resource string) revel.Result {
-	cf := auth.ContentConf{}.GetContentConf(contentType)
+func (c Rest) DeleteResource(resource string) revel.Result {
 	data := make(map[string]interface{})
+	err := provider.Content{}.Construct().Delete(resource)
 
-	if !cf.HasAccess(c.Request.Header, "delete") {
-		return c.NotFound("unable to access page")
-	}
-	success, err := provider.Content{}.Construct().Delete(contentType, resource)
-	if success {
+	if err == nil {
 		data["success"] = true
 
 		return c.RenderJSON(data)
 	}
 
 	return c.NotFound(err.Error())
+}
+
+// @todo implement
+func (c Rest) DeleteCollectionResource(collection string, resource string) revel.Result {
+	return c.RenderText("implement")
 }
 
 // renderContent runs through a switch case to parse and return the content format filled in with the desired data.
@@ -187,36 +190,27 @@ func (c Rest) Delete(contentType string, resource string) revel.Result {
 // @todo need to add more response formats.
 //
 // Available resFormats at the moment: json, xml
-func (c Rest) renderContent(
-	cnt map[string]interface{},
-	resType string,
-	fields []map[string]map[string]interface{},
-	ctype string) revel.Result {
+func (c Rest) renderContent(cnt service.KekDoc) revel.Result {
+	v := conf.Views{}
+	domainPath := revel.Config.StringDefault("domain.base.path", "/")
 
-	base := revel.Config.StringDefault("domain.base.url", "") + "/" + revel.Config.StringDefault("domain.base.path", "/")
-	v := app.Views{}
 
-	if cnt["_collection"] != nil {
-		cc := cnt["_collection"].([]map[string]interface{})
-		fc := make([]interface{}, len(cc))
-		for k, item := range cc {
-			fc[k] =v.Get(resType).Run(item, fields, base, ctype)
-		}
+	resType := c.Request.Header.Get("Accept")
+	fmt := c.Params.Query.Get("_format")
 
-		if strings.Contains(resType, "json") {
-			return c.RenderJSON(fc)
-		} else if strings.Contains(resType, "xml") {
-			return c.RenderXML(fc)
-		} else {
-			return c.Render(fc)
-		}
+	if fmt != "" {
+		resType = fmt
+	}
+
+	if resType == "" || resType == "*/*" {
+		resType = revel.Config.StringDefault("response.format.default", "application/vnd.siren+json")
 	}
 
 	if strings.Contains(resType, "json") {
-		return c.RenderJSON(v.Get(resType).Run(cnt, fields, base, ctype))
+		return c.RenderJSON(v.Get(resType).Run(cnt, domainPath))
 	} else if strings.Contains(resType, "xml") {
-		return c.RenderXML(v.Get(resType).Run(cnt, fields, base, ctype))
+		return c.RenderXML(v.Get(resType).Run(cnt, domainPath))
 	} else {
-		return c.Render(v.Get(resType).Run(cnt, fields, base, ctype))
+		return c.Render(v.Get(resType).Run(cnt, domainPath))
 	}
 }

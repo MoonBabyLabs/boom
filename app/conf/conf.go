@@ -1,9 +1,8 @@
-package app
+package conf
 
 import (
 	"github.com/MoonBabyLabs/boom/app/views"
 	"github.com/MoonBabyLabs/boom/app/views/json"
-	"log"
 	"github.com/MoonBabyLabs/boom/app/service/publisher"
 )
 
@@ -33,7 +32,6 @@ func (v Views) SetList() Views {
 
 func (v Views) Get(vtype string) views.Runner {
 	v = v.SetList()
-	log.Print(vtype)
 
 	if v.List[vtype] == nil {
 		return v.List["default"]

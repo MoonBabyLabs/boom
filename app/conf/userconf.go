@@ -1,4 +1,4 @@
-package app
+package conf
 
 import (
 	"github.com/MoonBabyLabs/boom/app/service/publisher"
