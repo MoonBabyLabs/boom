@@ -13,6 +13,7 @@ import (
 	"github.com/MoonBabyLabs/kek/service"
 	"strconv"
 	"log"
+	service2 "github.com/MoonBabyLabs/boom/app/service"
 )
 
 type Rest struct {
@@ -24,6 +25,12 @@ type Rest struct {
 // @param resource is the identifier for the desired resource item.
 // Returns a Revel render result
 func (c Rest) GetCollectionResource(contentType string, resource string) revel.Result {
+	jToken := c.Request.Header.Get("jwt")
+	valid := service2.JWT{}.Validate(jToken)
+
+	if !valid {
+		return c.NotFound("page not found")
+	}
 	cf := auth.ContentConf{}.GetContentConf(contentType)
 
 	if !cf.HasAccess(c.Request.Header, "read") {
@@ -57,6 +64,12 @@ func (c Rest) Options() revel.Result {
 // Patch will return back a success method with data on success. It will return an appropriate HTTP error code and message on failuare.
 // @todo Patch should follow some standard that also has description. Needs more research to determine how to handle standardization without overcomplicating it.
 func (c Rest) PatchResource(resource string) revel.Result {
+	jToken := c.Request.Header.Get("jwt")
+	valid := service2.JWT{}.Validate(jToken)
+
+	if !valid {
+		return c.NotFound("page not found")
+	}
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
 	log.Print(resource)
@@ -75,11 +88,23 @@ func (c Rest) PatchResource(resource string) revel.Result {
 
 // @todo implement
 func (c Rest) PatchCollection() revel.Result {
+	jToken := c.Request.Header.Get("jwt")
+	valid := service2.JWT{}.Validate(jToken)
+
+	if !valid {
+		return c.NotFound("page not found")
+	}
 	return c.RenderText("implement")
 }
 
 // @todo implement
 func (c Rest) GetResource(resource string) revel.Result {
+	jToken := c.Request.Header.Get("jwt")
+	valid := service2.JWT{}.Validate(jToken)
+
+	if !valid {
+		return c.NotFound("page not found")
+	}
 	revHistory := c.Params.Query.Get("_revisions") != ""
 	kek, err := provider.Content{}.Construct().Find(resource, revHistory)
 
@@ -91,6 +116,12 @@ func (c Rest) GetResource(resource string) revel.Result {
 }
 
 func (c Rest) PutResource(resource string) revel.Result {
+	jToken := c.Request.Header.Get("jwt")
+	valid := service2.JWT{}.Validate(jToken)
+
+	if !valid {
+		return c.NotFound("page not found")
+	}
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
 	upd, err := provider.Content{}.Construct().Update(resource, item, false)
@@ -108,6 +139,12 @@ func (c Rest) PutResource(resource string) revel.Result {
 
 // @todo implement
 func (c Rest) PutCollectionResource(resource string) revel.Result {
+	jToken := c.Request.Header.Get("jwt")
+	valid := service2.JWT{}.Validate(jToken)
+
+	if !valid {
+		return c.NotFound("page not found")
+	}
 	return c.RenderText("implement")
 }
 
@@ -120,6 +157,13 @@ func (c Rest) PostCollectionResource(collection string) revel.Result {
 }
 
 func (c Rest) PostResource() revel.Result {
+	jToken := c.Request.Header.Get("jwt")
+	valid := service2.JWT{}.Validate(jToken)
+
+	if !valid {
+		return c.NotFound("page not found")
+	}
+
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
 	kd, err := content.Default{}.Add(item, c.Params.Files)
@@ -133,6 +177,13 @@ func (c Rest) PostResource() revel.Result {
 
 // @todo Implement
 func (c Rest) Main() revel.Result {
+	jToken := c.Request.Header.Get("jwt")
+	valid := service2.JWT{}.Validate(jToken)
+
+	if !valid {
+		return c.NotFound("page not found")
+	}
+
 	attrs := make(map[string]interface{})
 	limit := c.Params.Query.Get("_limit")
 	history := c.Params.Query.Get("_revisions") != ""
@@ -166,6 +217,13 @@ func (c Rest) Main() revel.Result {
 }
 
 func (c Rest) DeleteResource(resource string) revel.Result {
+	jToken := c.Request.Header.Get("jwt")
+	valid := service2.JWT{}.Validate(jToken)
+
+	if !valid {
+		return c.NotFound("page not found")
+	}
+
 	data := make(map[string]interface{})
 	err := provider.Content{}.Construct().Delete(resource)
 
