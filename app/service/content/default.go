@@ -4,8 +4,7 @@ import (
 	"github.com/MoonBabyLabs/boom/app/service/filemanager"
 	"mime/multipart"
 	"github.com/MoonBabyLabs/boom/app/service/publisher"
-	"github.com/MoonBabyLabs/kek/service"
-	"log"
+	"github.com/MoonBabyLabs/kek"
 )
 
 type Default struct {
@@ -14,8 +13,8 @@ type Default struct {
 	fileManager filemanager.Contract
 }
 
-func (m Default) Find(resource string, revHistory bool) (service.KekDoc, error) {
-	kd := service.KekDoc{}
+func (m Default) Find(resource string, revHistory bool) (kek.KekDoc, error) {
+	kd := kek.KekDoc{}
 	item, getErr := kd.Get(resource, revHistory)
 
 	return item, getErr
@@ -23,25 +22,25 @@ func (m Default) Find(resource string, revHistory bool) (service.KekDoc, error) 
 
 func (m Default) Add(
 	attrs map[string]interface{},
-	files map[string][]*multipart.FileHeader) (service.KekDoc, error) {
+	files map[string][]*multipart.FileHeader) (kek.KekDoc, error) {
 
-	return service.KekDoc{}.New(attrs)
+	return kek.KekDoc{}.New(attrs)
 }
 
 // Delete removes an instance of a content type
 func (m Default) Delete(resource string) error {
-	return service.KekDoc{}.Delete(resource)
+	return kek.KekDoc{}.Delete(resource)
 }
 
 // All retrieves content documents that match the requested criteria.
-func (m Default) All(attributes map[string]interface{}, limit int, order string, offset int, revHistory bool) ([]service.KekDoc, error) {
-		log.Print(offset)
-		dq := service.DocQuery{}
-		dq.SearchQueries = make([]service.SearchQuery, len(attributes))
+func (m Default) All(attributes map[string]interface{}, limit int, order string, offset int, revHistory bool) ([]kek.KekDoc, error) {
+		dq := kek.DocQuery{}
+		dq.SearchQueries = make([]kek.SearchQuery, len(attributes))
 		dq.OrderBy = order
 		dq.Offset = offset
 		count := 0
 		dq.Limit = limit
+
 
 		for field, val := range attributes {
 			dq.SearchQueries[count].Value = val.(string)
@@ -50,15 +49,15 @@ func (m Default) All(attributes map[string]interface{}, limit int, order string,
 			count++
 		}
 
-		return service.KekDoc{}.Find(dq)
+		return kek.KekDoc{}.Find(dq)
 }
 
 // Update sends the content to the datastore to save a single content item. It will also update the necessary chains for that content piece.
 func (m Default) Update(
 	resource string,
 	attrs map[string]interface{},
-	patch bool) (service.KekDoc, error) {
-		item := service.KekDoc{}
+	patch bool) (kek.KekDoc, error) {
+		item := kek.KekDoc{}
 
 		return item.Update(resource, attrs, patch)
 }

@@ -3,7 +3,6 @@ package app
 import (
 	"encoding/json"
 	"github.com/revel/revel"
-	"log"
 	"strings"
 )
 
@@ -55,21 +54,15 @@ func SetResponseFormat(c *revel.Controller, fc []revel.Filter) {
 func ParseJsonBodyFilter(c *revel.Controller, fc []revel.Filter) {
 	var b []byte
 	c.Request.Body.Read(b)
-	log.Print(b)
-	log.Print(c.Params.JSON)
 	if len(b) > 0 {
 		cd, _ := json.Marshal(c.Params.JSON)
 		c.Params.JSON = cd
 	}
 
-	log.Print(b)
-
 	fc[0](c, fc[1:])
 }
 
 func ValidateDomainBasePath(c *revel.Controller, fc []revel.Filter) {
-	log.Print(c.Request.RequestURI)
-	log.Print(revel.Config.StringDefault("domain.base.path", ""))
 	path := c.Request.RequestURI
 
 	if c.Request.RequestURI == "/favicon.ico" {
@@ -92,7 +85,6 @@ func RemoveDomainBasePath(c *revel.Controller, fc []revel.Filter) {
 		"",
 		1)
 
-	log.Print(c.Request.Request.URL.Path)
 	fc[0](c, fc[1:])
 }
 
@@ -112,8 +104,6 @@ var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
 			protocol = "https://"
 		}
 
-		log.Print(c.Response.Out.Header().Get("Access-Control-Allow-Origin"))
-
 		c.Response.Out.Header().Add(
 			"Access-Control-Allow-Origin",
 			protocol+c.Request.Host)
@@ -123,7 +113,7 @@ var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
 		}
 
 		c.Response.Out.Header().Add("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE, OPTIONS")
-		c.Response.Out.Header().Add("Access-Control-Allow-Headers", "content-type,write,delete,update,publish")
+		c.Response.Out.Header().Add("Access-Control-Allow-Headers", "accept,content-type")
 	}
 
 	fc[0](c, fc[1:]) // Execute the next filter stage.

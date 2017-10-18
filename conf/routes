@@ -7,23 +7,28 @@ module:testrunner
 # module:jobs
 
 
-GET     /                                                          Rest.Main
-GET /install                                                       App.Install
-GET /t                                                             App.Token
-GET     /:resource                                               Rest.GetResource
+GET /install                                                        App.Install
+POST /install                                                       App.SaveInstall
+POST /t                                                             App.Token
 
-## This method may be unnecesary because a resource is universal and can be used in multiple collections. Could be kept for vanity purposes and confirming that the resource is actually within the collection.
-GET     /:collection/:resource                                     Rest.GetCollectionResource
+// Used as a search route for documents
+GET     /api/:version                                                         Get.Search
 
-POST    /                                                          Rest.PostResource
-POST    /:collection                                               Rest.PostCollectionResource
+// Get some kind of resource. May be a collection, media or document
+GET     /api/:version/:resource                                               Get.GetResource
 
-PUT     /:resource                                                 Rest.PutResource
-PATCH   /:resource                                                 Rest.PatchResource
+// Add a resource that may be a collection, media or document
+POST    /api/:version                                                          Post.PostResource
 
-DELETE  /:resource                                                 Rest.DeleteResource
-DELETE  /:collection/:resource                                     Rest.DeleteCollectionResource
+// Fully replace a document, collection or media
+PUT     /api/:version/:resource                                                 Put.PutResource
+
+// Partially update a document, collection or media
+PATCH   /api/:version/:resource                                                 Patch.PatchResource
+
+// Permanently deletes a document, collection or media from the kekspace
+DELETE  /api/:version/:resource                                                 Delete.DeleteResource
 
 GET    /public/*filepath            Static.Serve("public")
 
-OPTIONS /*                                                  Rest.Options
+OPTIONS /*                                                  Options.Options

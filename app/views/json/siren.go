@@ -2,8 +2,7 @@ package json
 
 import (
 	"github.com/MoonBabyLabs/boom/app/views"
-	"github.com/MoonBabyLabs/kek/service"
-	"encoding/json"
+	"github.com/MoonBabyLabs/kek"
 )
 
 type SirenLink struct {
@@ -42,7 +41,7 @@ type SirenResponse struct{
 }
 
 // Run returns a new view.Runner that can be used to set for specific view displays.
-func (s SirenResponse) Run(cnt service.KekDoc, urlRoute string) views.Runner {
+func (s SirenResponse) Run(cnt kek.KekDoc, urlRoute string) views.Runner {
 	res := SirenResponse{}
 	res.Properties = make(map[string]interface{})
 	res.Entities = make([]SirenEntity, 0)
@@ -76,9 +75,6 @@ func (s SirenResponse) Run(cnt service.KekDoc, urlRoute string) views.Runner {
 					Href: "/" + cnt.Id + "?_rev=" + block.HashString(),
 				},
 			}
-			unmarshalledBlockData := make(map[string]interface{})
-			json.Unmarshal(block.Data, unmarshalledBlockData)
-			revi.Properties = unmarshalledBlockData
 			revi.Title = "Revision: " + block.HashString()
 			res.Entities = append(res.Entities, revi)
 	}

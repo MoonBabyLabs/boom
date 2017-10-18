@@ -1,7 +1,7 @@
 package views
 
-import "github.com/MoonBabyLabs/kek/service"
+import "github.com/MoonBabyLabs/kek"
 
 type Runner interface {
-	Run(cnt service.KekDoc, urlRoute string) Runner
+	Run(cnt kek.KekDoc, urlRoute string) Runner
 }

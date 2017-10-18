@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Install Your KekBoom Api</title>
+</head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+<body>
+<div class="header" style="background-color: #141414; color: #fff; margin-bottom: 2em; padding: 1.5em 0; border-bottom: 1px solid #000;">
+    <div class="container">
+        <div class="row">
+            <h1 style="font-size: 24px;" class="col-xs-12">Install Your KekBoom API</h1>
+        </div>
+    </div>
+</div>
+<div class="main">
+    <form class="container" action="/install" method="POST">
+        <div class="row" style="padding: .5em 0;">
+            <div class="form-group col-sm-12">
+                <label for="kekspace">Name Your KekBoom API KekSpace:</label>
+                <input name="kekspace" id="kekspace" placeholder="My awesome api" class="form-control" />
+            </div>
+        </div>
+        <div class="row" style="padding: .5em 0;">
+            <div class="col-sm-12">
+                <h2>Your Details:</h2>
+            </div>
+        </div>
+        <div class="row"  style="padding: .5em 0;">
+            <div class="form-group col-sm-4">
+                <label for="name">Your Name:</label>
+                <input required name="name" id="name" placeholder="My awesome api" class="form-control" />
+            </div>
+            <div class="form-group col-sm-4">
+                <label for="email">Your Email:</label>
+                <input required name="email" id="email" placeholder="george@thejungle.com" class="form-control" />
+            </div>
+            <div class="form-group col-sm-4">
+                <label for="phone">Your Phone:</label>
+                <input name="phone" id="phone" placeholder="(333)333-3333" class="form-control" />
+            </div>
+        </div>
+        <div class="row"  style="padding: .5em 0;">
+            <div class="form-group col-sm-6">
+                <label for="address">Your Address:</label>
+                <input name="address" id="address" placeholder="34 somewhere st" class="form-control" />
+            </div>
+            <div class="form-group col-sm-6">
+                <label for="city">Your City:</label>
+                <input name="city" id="city" placeholder="Some Town" class="form-control" />
+            </div>
+        </div>
+        <div class="row"  style="padding: .5em 0;">
+            <div class="form-group col-sm-4">
+                <label for="region">Your Region:</label>
+                <input name="region" id="region" placeholder="Some Region" class="form-control" />
+            </div>
+            <div class="form-group col-sm-4">
+                <label for="postal_code">Your Postal Code:</label>
+                <input name="postal_code" id="postal_code" placeholder="33333" class="form-control" />
+            </div>
+            <div class="form-group col-sm-4">
+                <label for="country_code">Your Country:</label>
+                <input name="country_code" id="country_code" placeholder="US" class="form-control" />
+            </div>
+        </div>
+        <div class="row" style="padding: .5em 0;">
+            <div class="col-sm-12">
+                <h2>Company Details:</h2>
+            </div>
+        </div>
+        <div class="row" style="padding: .5em 0;">
+            <div class="form-group col-sm-4">
+                <label for="company_name">Company Name:</label>
+                <input name="company_name" id="company_name" placeholder="My awesome api" class="form-control" />
+            </div>
+            <div class="form-group col-sm-4">
+                <label for="company_email">Company Contact Email:</label>
+                <input required name="company_email" id="company_email" placeholder="george@thejungle.com" class="form-control" />
+            </div>
+            <div class="form-group col-sm-4">
+                <label for="company_phone">Company Phone:</label>
+                <input name="company_phone" id="company_phone" placeholder="(333)333-3333" class="form-control" />
+            </div>
+        </div>
+        <div class="row" style="padding: .5em 0;">
+            <div class="form-group col-sm-6">
+                <label for="company_address">Company Address:</label>
+                <input name="company_address" id="company_address" placeholder="(333)333-3333" class="form-control" />
+            </div>
+            <div class="form-group col-sm-6">
+                <label for="company_city">Company City:</label>
+                <input name="company_city" id="company_city" placeholder="Some Town" class="form-control" />
+            </div>
+        </div>
+        <div class="row" style="padding: .5em 0;">
+            <div class="form-group col-sm-4">
+                <label for="company_region">Company Region:</label>
+                <input name="company_region" id="company_region" placeholder="Region" class="form-control" />
+            </div>
+            <div class="form-group col-sm-4">
+                <label for="company_postal_code">Company Postal Code:</label>
+                <input name="company_postal_code" id="company_postal_code" placeholder="99999" class="form-control" />
+            </div>
+            <div class="form-group col-sm-4">
+                <label for="company_country_code">Company Country:</label>
+                <input name="company_country_code" id="company_country_code" placeholder="US" class="form-control" />
+            </div>
+        </div>
+        <div class="row"  style="padding: .5em 0;">
+            <div class="col-sm-12">
+                <input type="submit" class="btn btn-primary " style="text-align: center;" value="submit" />
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

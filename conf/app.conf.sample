@@ -107,10 +107,6 @@ i18n.default_language = en
 module.static=github.com/revel/modules/static
 
 
-db.name = /content
-db.host = /src/github.com/MoonBabyLabs/boom/data
-content.confDir = /src/github.com/MoonBabyLabs/boom/conf/content/
-
 # Hosts that are allowed access to request access across domains.
 # Given that https requires exact match reference, we don't use wildcards for CORS to keep things consistent. You
 # will need to put any production or test hosts here.
