@@ -24,6 +24,17 @@ func (c Get) Search() revel.Result {
 	history := c.Params.Query.Get("_revisions") != ""
 	order := c.Params.Query.Get("_order")
 	offset, _ := strconv.Atoi(c.Params.Query.Get("_offset"))
+	collections := c.Params.Query.Get("_collections")
+
+	if collections != "" {
+		cols, colLoadErr := kekcollections.Collection{}.All(true, history)
+
+		if colLoadErr != nil {
+			return c.RenderError(colLoadErr)
+		}
+
+		return c.RenderJSON(cols)
+	}
 	c.Params.Query.Del("_order")
 	c.Params.Query.Del("_revisions")
 	c.Params.Query.Del("_limit")

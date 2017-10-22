@@ -19,15 +19,18 @@ GET     /api/:version/:resource                                               Ge
 
 // Add a resource that may be a collection, media or document
 POST    /api/:version                                                          Post.PostResource
+POST    /api/:version/:collectionResource                                      Post.PostCollectionResource
 
 // Fully replace a document, collection or media
 PUT     /api/:version/:resource                                                 Put.PutResource
+PUT     /api/:version/:collection/:resource                                     Put.PutCollectionResource
 
 // Partially update a document, collection or media
 PATCH   /api/:version/:resource                                                 Patch.PatchResource
 
 // Permanently deletes a document, collection or media from the kekspace
 DELETE  /api/:version/:resource                                                 Delete.DeleteResource
+DELETE /api/:version/:collection/:resource                                      Delete.DeleteCollectionResource
 
 GET    /public/*filepath            Static.Serve("public")
 

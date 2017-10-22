@@ -4,6 +4,9 @@ import (
 	"github.com/revel/revel"
 	"github.com/MoonBabyLabs/kekcollections"
 	"github.com/MoonBabyLabs/boom/app/service/content"
+	"github.com/MoonBabyLabs/kek"
+	"errors"
+	"log"
 )
 
 type Post struct {
@@ -45,4 +48,47 @@ func (c Post) PostResource() revel.Result {
 
 		return c.RenderContent(kd)
 	}
+}
+
+
+func (c Post) PostCollectionResource(collectionResource string) revel.Result {
+	accessE := c.HasAccess(c.Request.Header.Get("Authorization"), "write"); if accessE != nil {
+		return c.RenderError(accessE)
+	}
+
+	attrs := make(map[string]interface{})
+	c.Params.BindJSON(&attrs)
+	kd, newE := kek.KekDoc{}.New(attrs)
+
+	if newE != nil {
+		return c.RenderError(newE)
+	}
+
+	resType := collectionResource[0:2]
+	col := kekcollections.Collection{}
+
+	if resType == "dd" {
+		return c.RenderError(errors.New("Can't attach posted resource to " + collectionResource + " because it is a document and not a collection"))
+	} else if resType == "cc" {
+		loadedCol, err := col.LoadById(collectionResource, false, false)
+		log.Print(loadedCol)
+
+		if err != nil {
+			return c.RenderError(err)
+		}
+
+		loadedCol.AddDoc(kd)
+
+	} else {
+		// Lets assume that the collection is now a slug.
+		col, err := col.LoadBySlug(collectionResource, 0,false, false)
+
+		if err != nil {
+			return c.RenderError(err)
+		}
+
+		col.AddDoc(kd)
+	}
+
+	return c.RenderContent(kd)
 }

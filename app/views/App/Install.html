@@ -18,7 +18,7 @@
         <div class="row" style="padding: .5em 0;">
             <div class="form-group col-sm-12">
                 <label for="kekspace">Name Your KekBoom API KekSpace:</label>
-                <input name="kekspace" id="kekspace" placeholder="My awesome api" class="form-control" />
+                <input required name="kekspace" id="kekspace" placeholder="My awesome api" class="form-control" />
             </div>
         </div>
         <div class="row" style="padding: .5em 0;">
@@ -29,15 +29,15 @@
         <div class="row"  style="padding: .5em 0;">
             <div class="form-group col-sm-4">
                 <label for="name">Your Name:</label>
-                <input required name="name" id="name" placeholder="My awesome api" class="form-control" />
+                <input required name="name" id="name" placeholder="Your name" class="form-control" />
             </div>
             <div class="form-group col-sm-4">
                 <label for="email">Your Email:</label>
-                <input required name="email" id="email" placeholder="george@thejungle.com" class="form-control" />
+                <input required name="email" id="email" type="email" placeholder="george@thejungle.com" class="form-control" />
             </div>
             <div class="form-group col-sm-4">
                 <label for="phone">Your Phone:</label>
-                <input name="phone" id="phone" placeholder="(333)333-3333" class="form-control" />
+                <input name="phone" id="phone" type="tel" placeholder="(333)333-3333" class="form-control" />
             </div>
         </div>
         <div class="row"  style="padding: .5em 0;">
@@ -76,7 +76,7 @@
             </div>
             <div class="form-group col-sm-4">
                 <label for="company_email">Company Contact Email:</label>
-                <input required name="company_email" id="company_email" placeholder="george@thejungle.com" class="form-control" />
+                <input type="email" name="company_email" id="company_email" placeholder="george@thejungle.com" class="form-control" />
             </div>
             <div class="form-group col-sm-4">
                 <label for="company_phone">Company Phone:</label>

@@ -2,8 +2,9 @@ package controllers
 
 import (
 	"github.com/revel/revel"
-	"github.com/MoonBabyLabs/boom/app/service/content"
 	"github.com/MoonBabyLabs/kekcollections"
+	"github.com/MoonBabyLabs/kek"
+	"errors"
 )
 
 type Delete struct {
@@ -12,32 +13,94 @@ type Delete struct {
 }
 
 func (c Delete) DeleteResource(resource string) revel.Result {
-	accessErr := c.HasAccess(c.Request.Header.Get("jwt"),"delete"); if accessErr != nil {
+	accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"delete"); if accessErr != nil {
 		return c.RenderError(accessErr)
 	}
 
+	resType := resource[0:2]
+	var delErr error
 	data := make(map[string]interface{})
-	err := content.Default{}.Delete(resource)
+	data["success"] = true
 
-	if err == nil {
-		data["success"] = true
+	switch resType {
+	case "dd":
+		err := kek.KekDoc{}.Delete(resource)
 
+		if err == nil {
+			return c.RenderJSON(data)
+		} else {
+			return c.RenderError(err)
+		}
+
+		break
+	case "cc":
+		kc := kekcollections.Collection{Id: resource}
+		delErr := kc.Delete(true)
+
+		if delErr != nil {
+			return c.RenderError(delErr)
+		} else {
+			return c.RenderJSON(data)
+		}
+
+		break
+	}
+
+	col, loadEr := kekcollections.Collection{}.LoadBySlug(resource, 0, false, false)
+
+	if loadEr != nil {
+		return c.RenderError(loadEr)
+	}
+
+	delErr = col.Delete(true)
+
+	if delErr != nil {
+		return c.RenderError(delErr)
+	} else {
 		return c.RenderJSON(data)
 	}
 
-	col, _ := kekcollections.Collection{}.LoadBySlug(resource, 0, false, false)
-	delColErr := col.Delete(true)
-
-	if delColErr == nil {
-		data["success"] = true
-
-		return c.RenderJSON(data)
-	}
-
-	return c.RenderError(delColErr)
+	return c.RenderError(errors.New("Could not find " + resource + " resource to delete"))
 }
 
 // @todo implement
 func (c Delete) DeleteCollectionResource(collection string, resource string) revel.Result {
-	return c.RenderText("implement")
+	accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"delete"); if accessErr != nil {
+		return c.RenderError(accessErr)
+	}
+
+	resType := collection[0:2]
+
+	if resType == "cc" {
+		col, loadErr := kekcollections.Collection{}.LoadById(collection, false, false)
+
+		if loadErr != nil {
+			return c.RenderError(loadErr)
+		}
+		kd := kek.KekDoc{Id: resource}
+		_, err := col.DeleteDoc(kd)
+
+		if err != nil {
+			return c.RenderError(err)
+		}
+
+	} else {
+		col, loadErr := kekcollections.Collection{}.LoadBySlug(collection, 0, false, false)
+
+		if loadErr != nil {
+			return c.RenderError(loadErr)
+		}
+
+		kd := kek.KekDoc{Id: resource}
+		_, err := col.DeleteDoc(kd)
+
+		if err != nil {
+			return c.RenderError(err)
+		}
+	}
+
+	data := make(map[string]bool)
+	data["success"] = true
+
+	return c.RenderJSON(data)
 }

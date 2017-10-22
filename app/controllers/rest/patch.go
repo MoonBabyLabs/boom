@@ -16,7 +16,8 @@ type Patch struct {
 // @param contentType is a string that tells us the type of content we are patching.
 // @param resource is a string that tells us the resource identifier that we are patching.
 // Patch will return back a success method with data on success. It will return an appropriate HTTP error code and message on failuare.
-// @todo Patch should follow some standard that also has description. Needs more research to determine how to handle standardization without overcomplicating it.
+// TODO(miracle) Patch should follow some standard that also has description. Needs more research to determine how to handle standardization without overcomplicating it.
+// TODO(miracle) Patching collections should be dynamic enough to know based on the id whether its a collection. Also, if it is a slug then we know its a collection.
 func (c Patch) PatchResource(resource string) revel.Result {
 	accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"update"); if accessErr != nil {
 		return c.RenderError(accessErr)
@@ -30,7 +31,7 @@ func (c Patch) PatchResource(resource string) revel.Result {
 		col := kekcollections.Collection{}
 		col.Id = resource
 		c.Params.BindJSON(&col)
-		updated, updErr := col.Patch(col)
+		updated, updErr := col.Patch()
 
 		if updErr != nil {
 			return c.RenderError(updErr)
@@ -50,13 +51,4 @@ func (c Patch) PatchResource(resource string) revel.Result {
 
 		return c.RenderContent(upd)
 	}
-}
-
-// @todo implement
-func (c Patch) PatchCollection() revel.Result {
-	accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"patch"); if accessErr != nil {
-		return c.RenderError(accessErr)
-	}
-
-	return c.RenderText("implement")
 }
