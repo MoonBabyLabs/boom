@@ -24,7 +24,7 @@ func (c Delete) DeleteResource(resource string) revel.Result {
 
 	switch resType {
 	case "dd":
-		err := kek.KekDoc{}.Delete(resource)
+		err := kek.Doc{}.Delete(resource)
 
 		if err == nil {
 			return c.RenderJSON(data)
@@ -46,7 +46,7 @@ func (c Delete) DeleteResource(resource string) revel.Result {
 		break
 	}
 
-	col, loadEr := kekcollections.Collection{}.LoadBySlug(resource, 0, false, false)
+	col, loadEr := kekcollections.Collection{}.LoadBySlug(resource,false, false)
 
 	if loadEr != nil {
 		return c.RenderError(loadEr)
@@ -63,7 +63,6 @@ func (c Delete) DeleteResource(resource string) revel.Result {
 	return c.RenderError(errors.New("Could not find " + resource + " resource to delete"))
 }
 
-// @todo implement
 func (c Delete) DeleteCollectionResource(collection string, resource string) revel.Result {
 	accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"delete"); if accessErr != nil {
 		return c.RenderError(accessErr)
@@ -77,22 +76,20 @@ func (c Delete) DeleteCollectionResource(collection string, resource string) rev
 		if loadErr != nil {
 			return c.RenderError(loadErr)
 		}
-		kd := kek.KekDoc{Id: resource}
-		_, err := col.DeleteDoc(kd)
+		err := col.DeleteResource(resource)
 
 		if err != nil {
 			return c.RenderError(err)
 		}
 
 	} else {
-		col, loadErr := kekcollections.Collection{}.LoadBySlug(collection, 0, false, false)
+		col, loadErr := kekcollections.Collection{}.LoadBySlug(collection, false, false)
 
 		if loadErr != nil {
 			return c.RenderError(loadErr)
 		}
 
-		kd := kek.KekDoc{Id: resource}
-		_, err := col.DeleteDoc(kd)
+		err := col.DeleteResource(resource)
 
 		if err != nil {
 			return c.RenderError(err)

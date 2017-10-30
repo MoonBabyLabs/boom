@@ -2,10 +2,11 @@ package controllers
 
 import (
 	"github.com/revel/revel"
-	"github.com/MoonBabyLabs/boom/app/service/content"
 	"github.com/MoonBabyLabs/kekcollections"
 	"github.com/MoonBabyLabs/kek"
 	"errors"
+	"log"
+	"strings"
 )
 
 type Put struct {
@@ -20,32 +21,56 @@ func (c Put) PutResource(resource string) revel.Result {
 
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
+	itemType := resource[0:2]
+	hiddenFieldsConf := revel.Config.StringDefault("hide.fields", "password")
+	hiddenFields := strings.Split(hiddenFieldsConf, ",")
 
-	if item["is_collection"] == true {
-		col := kekcollections.Collection{}
-		c.Params.BindJSON(&col)
-		col.Id = resource
-		updatedCol, updErr := col.Replace()
+	switch itemType {
+	case "cc":
+		col, loadEr := kekcollections.Collection{}.LoadById(resource, false, false)
 
-		if updErr != nil {
-			return c.RenderError(updErr)
+		// Looks like its not in our space. Lets try to verify that its good kekcontact and put into the space
+		if loadEr != nil {
+
+		} else {
+			// Lets update the item in our space.
+			c.Params.BindJSON(&col)
+			col.Id = resource
+			updErr := col.Save()
+
+			if updErr != nil {
+				return c.RenderError(updErr)
+			}
+			return c.RenderJSON(col)
 		}
+		break
+	case "dd":
+		_, loadErr := kek.Doc{}.Get(resource, false)
+		log.Print(loadErr)
 
-		return c.RenderJSON(updatedCol)
-	} else {
-		upd, err := content.Default{}.Update(resource, item, false)
+		if loadErr != nil {
 
-		if err != nil {
-			data := make(map[string]interface{})
-			data["success"] = false
-			data["error"] = err.Error()
+		} else {
+			upd, err := kek.Doc{}.Update(resource, item, false)
 
-			return c.RenderJSON(data)
+			if err != nil {
+				data := make(map[string]interface{})
+				data["success"] = false
+				data["error"] = err.Error()
+
+				return c.RenderJSON(data)
+			}
+
+			for _, hf := range hiddenFields {
+				delete(upd.Attributes, hf)
+			}
+
+			return c.RenderContent(upd)
+			break
 		}
-
-		return c.RenderContent(upd)
 	}
 
+	return c.RenderError(errors.New("could not find item to update"))
 }
 
 func (c Put) PutCollectionResource(collection string, resource string) revel.Result {
@@ -53,7 +78,7 @@ func (c Put) PutCollectionResource(collection string, resource string) revel.Res
 		return c.RenderError(accessErr)
 	}
 
-	kd, kdLoadErr := kek.KekDoc{}.Get(resource, false)
+	kd, kdLoadErr := kek.Doc{}.Get(resource, false)
 
 	if kdLoadErr != nil {
 		return c.RenderError(kdLoadErr)
@@ -62,7 +87,7 @@ func (c Put) PutCollectionResource(collection string, resource string) revel.Res
 	resType := collection[0:2]
 
 	if resType == "dd" {
-		return c.RenderError(errors.New("You are trying to save a resource into a kekdoc. This isn't possible. You must save into an appropriate kekcollection"))
+		return c.RenderError(errors.New("you are trying to save a resource into a kekdoc. This isn't possible. You must save into an appropriate kekcollection"))
 	} else if resType == "cc" {
 		col, colErr := kekcollections.Collection{}.LoadById(collection, false, false)
 
@@ -70,15 +95,15 @@ func (c Put) PutCollectionResource(collection string, resource string) revel.Res
 			return c.RenderError(colErr)
 		}
 
-		col.AddDoc(kd)
+		col.AddResource(resource)
 	} else {
-		col, colErr := kekcollections.Collection{}.LoadBySlug(collection, 0, false, false)
+		col, colErr := kekcollections.Collection{}.LoadBySlug(collection, false, false)
 
 		if colErr != nil {
 			return c.RenderError(colErr)
 		}
 
-		col.AddDoc(kd)
+		col.AddResource(resource)
 	}
 
 	return c.RenderContent(kd)

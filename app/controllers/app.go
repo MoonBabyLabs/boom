@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"github.com/revel/revel"
-	"github.com/MoonBabyLabs/kek"
 	"github.com/MoonBabyLabs/kekcontact"
 	"encoding/json"
 	"github.com/MoonBabyLabs/kekaccess"
+	"github.com/MoonBabyLabs/kekspace"
 )
 
 type App struct {
@@ -35,8 +35,7 @@ func (c App) Token() revel.Result {
 }
 
 func (c App) Install() revel.Result {
-	ks := kek.Kekspace{}
-	kek.Load(kek.KEK_SPACE_CONFIG, &ks)
+	ks, _ := kekspace.Kekspace{}.Load()
 
 	if ks.Name != "" {
 		return c.NotFound("page not found")
@@ -46,7 +45,6 @@ func (c App) Install() revel.Result {
 }
 
 func (c App) SaveInstall() revel.Result {
-	ks := kek.Kekspace{}
 	data := c.Params.Form
 	owner := kekcontact.Contact{}
 	owner.Name = data.Get("name")
@@ -67,17 +65,14 @@ func (c App) SaveInstall() revel.Result {
 		PostalCode: data.Get("company_postal_code"),
 		Region: data.Get("company_region"),
 	}
-	ks.Name = data.Get("kekspace")
-	ks.Owner = owner
-	ks.Contributors = []kekcontact.Contact{owner}
-	savedKS, ksErr := ks.New()
+	ks, ksErr := kekspace.Kekspace{}.New(data.Get("kekspace"), "", owner, []kekcontact.Contact{owner})
 
 	if ksErr != nil {
 		return c.RenderError(ksErr)
 	}
 
 	ka := kekaccess.Access{}
-	ka.GenerateSecret(savedKS.KekId + "/")
+	ka.GenerateSecret(ks.KekId + "/")
 	token := ka.AddAccessToken(true, true, true, true, true)
 
 	return c.RenderHTML("<p>Your KekBoom Installation was a success. Store this Access code in a safe place. Your apps will need to pass it through via different requests: <br />" + token + "</p>")

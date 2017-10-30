@@ -41,7 +41,7 @@ type SirenResponse struct{
 }
 
 // Run returns a new view.Runner that can be used to set for specific view displays.
-func (s SirenResponse) Run(cnt kek.KekDoc, urlRoute string) views.Runner {
+func (s SirenResponse) Run(cnt kek.Doc, urlRoute string) views.Runner {
 	res := SirenResponse{}
 	res.Properties = make(map[string]interface{})
 	res.Entities = make([]SirenEntity, 0)
@@ -53,7 +53,7 @@ func (s SirenResponse) Run(cnt kek.KekDoc, urlRoute string) views.Runner {
 	res.Properties["_kid"] = cnt.Id
 	res.Properties["created_at"] = cnt.CreatedAt
 	res.Properties["updated_at"] = cnt.UpdatedAt
-	res.Properties["_rev"] = cnt.Revision
+	res.Properties["_rev"] = cnt.Rev
 	res.Links = make([]SirenLink, 0)
 	links := make(map[string]SirenLink)
 	selfLink := SirenLink{
@@ -64,7 +64,8 @@ func (s SirenResponse) Run(cnt kek.KekDoc, urlRoute string) views.Runner {
 	res.Links = append(res.Links, selfLink)
 
 	// Lets add the revision chain
-	for _, block := range cnt.Chain.Blocks {
+	if cnt.Revisions != nil {
+		for _, block := range cnt.Revisions.GetBlocks() {
 			revi := SirenEntity{}
 			revi.Class = []string{"revision"}
 			revi.Actions = []SirenAction{}
@@ -77,6 +78,7 @@ func (s SirenResponse) Run(cnt kek.KekDoc, urlRoute string) views.Runner {
 			}
 			revi.Title = "Revision: " + block.HashString()
 			res.Entities = append(res.Entities, revi)
+		}
 	}
 
 	// Lets add the properties and media

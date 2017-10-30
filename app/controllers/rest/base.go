@@ -20,7 +20,7 @@ type Base struct {
 // @todo need to add more response formats.
 //
 // Available resFormats at the moment: json, xml
-func (c Base) RenderContent(cnt kek.KekDoc) revel.Result {
+func (c Base) RenderContent(cnt kek.Doc) revel.Result {
 	v := conf.Views{}
 	domainPath := revel.Config.StringDefault("domain.base.path", "/")
 

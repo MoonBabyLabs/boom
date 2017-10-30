@@ -3,10 +3,11 @@ package controllers
 import (
 	"github.com/revel/revel"
 	"github.com/MoonBabyLabs/kekcollections"
-	"github.com/MoonBabyLabs/boom/app/service/content"
 	"github.com/MoonBabyLabs/kek"
 	"errors"
 	"log"
+	"encoding/json"
+	"strings"
 )
 
 type Post struct {
@@ -28,9 +29,9 @@ func (c Post) PostResource() revel.Result {
 	c.Params.BindJSON(&item)
 
 	if item["is_collection"] == true {
-		col := kekcollections.Collection{}
-		c.Params.BindJSON(&col)
-		savedCol, err := col.New()
+		marshaledCol := kekcollections.Collection{}
+		json.Unmarshal(c.Params.JSON, &marshaledCol)
+		savedCol, err := kekcollections.Collection{}.New(marshaledCol.Name, marshaledCol.Description, marshaledCol.ResourceIds)
 
 		if err != nil {
 			return c.RenderError(err)
@@ -38,9 +39,7 @@ func (c Post) PostResource() revel.Result {
 
 		return c.RenderJSON(savedCol)
 	} else {
-		item := make(map[string]interface{})
-		c.Params.BindJSON(&item)
-		kd, err := content.Default{}.Add(item, c.Params.Files)
+		kd, err := kek.Doc{}.New(item)
 
 		if err != nil {
 			return c.RenderError(err)
@@ -58,7 +57,7 @@ func (c Post) PostCollectionResource(collectionResource string) revel.Result {
 
 	attrs := make(map[string]interface{})
 	c.Params.BindJSON(&attrs)
-	kd, newE := kek.KekDoc{}.New(attrs)
+	kd, newE := kek.Doc{}.New(attrs)
 
 	if newE != nil {
 		return c.RenderError(newE)
@@ -77,17 +76,24 @@ func (c Post) PostCollectionResource(collectionResource string) revel.Result {
 			return c.RenderError(err)
 		}
 
-		loadedCol.AddDoc(kd)
+		loadedCol.AddResource(kd.Id)
 
 	} else {
 		// Lets assume that the collection is now a slug.
-		col, err := col.LoadBySlug(collectionResource, 0,false, false)
+		col, err := col.LoadBySlug(collectionResource, false, false)
 
 		if err != nil {
 			return c.RenderError(err)
 		}
 
-		col.AddDoc(kd)
+		col.AddResource(kd.Id)
+	}
+
+	hiddenFieldsConf := revel.Config.StringDefault("hide.fields", "password")
+	hiddenFields := strings.Split(hiddenFieldsConf, ",")
+
+	for _, hf := range hiddenFields {
+		delete(kd.Attributes, hf)
 	}
 
 	return c.RenderContent(kd)
