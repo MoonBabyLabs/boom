@@ -45,6 +45,13 @@ func (c Post) PostResource() revel.Result {
 			return c.RenderError(err)
 		}
 
+		hiddenFieldsConf := revel.Config.StringDefault("hide.fields", "password")
+		hiddenFields := strings.Split(hiddenFieldsConf, ",")
+
+		for _, hf := range hiddenFields {
+			delete(kd.Attributes, hf)
+		}
+
 		return c.RenderContent(kd)
 	}
 }
