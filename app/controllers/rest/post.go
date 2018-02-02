@@ -21,9 +21,12 @@ type Post struct {
 // It returns back a json array with a succes message and the data when a new item is created.
 // It will return an appropriate error code and message when the user either didn't have enough access or the system couldn't create the new content resource.
 func (c Post) PostResource() revel.Result {
-	accessError :=c.HasAccess(c.Request.Header.Get("Authorization"),"write"); if accessError != nil {
-		return c.RenderError(accessError)
-	}
+        if revel.Config.StringDefault("require.jwt.postResource", "true") == "true" {
+                accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"write"); if accessErr != nil {
+                        return c.RenderError(accessErr)
+                }
+        }
+
 
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
@@ -58,9 +61,12 @@ func (c Post) PostResource() revel.Result {
 
 
 func (c Post) PostCollectionResource(collectionResource string) revel.Result {
-	accessE := c.HasAccess(c.Request.Header.Get("Authorization"), "write"); if accessE != nil {
-		return c.RenderError(accessE)
-	}
+        if revel.Config.StringDefault("require.jwt.postCollectionResource", "true") == "true" {
+                accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"write"); if accessErr != nil {
+                        return c.RenderError(accessErr)
+                }
+        }
+
 
 	attrs := make(map[string]interface{})
 	c.Params.BindJSON(&attrs)

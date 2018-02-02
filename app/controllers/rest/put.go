@@ -14,10 +14,13 @@ type Put struct {
 	Base
 }
 
-func (c Put) PutResource(resource string) revel.Result {
-	accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"update"); if accessErr != nil {
-		return c.RenderError(accessErr)
-	}
+func (c Put) PutResource(resource string) revel.Result {	
+        if revel.Config.StringDefault("require.jwt.putResource", "true") == "true" {
+                accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"update"); if accessErr != nil {
+                        return c.RenderError(accessErr)
+                }
+        }
+
 
 	item := make(map[string]interface{})
 	c.Params.BindJSON(&item)
@@ -74,8 +77,10 @@ func (c Put) PutResource(resource string) revel.Result {
 }
 
 func (c Put) PutCollectionResource(collection string, resource string) revel.Result {
-	accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"update"); if accessErr != nil {
-		return c.RenderError(accessErr)
+	if revel.Config.StringDefault("require.jwt.putCollectionResource", "true") == "true" {
+		accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"update"); if accessErr != nil {
+			return c.RenderError(accessErr)
+		}
 	}
 
 	kd, kdLoadErr := kek.Doc{}.Get(resource, false)

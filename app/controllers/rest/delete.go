@@ -13,8 +13,10 @@ type Delete struct {
 }
 
 func (c Delete) DeleteResource(resource string) revel.Result {
-	accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"delete"); if accessErr != nil {
-		return c.RenderError(accessErr)
+	if revel.Config.StringDefault("require.jwt.deleteResource", "true") == "true" {
+		accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"delete"); if accessErr != nil {
+			return c.RenderError(accessErr)
+		}
 	}
 
 	resType := resource[0:2]
@@ -64,8 +66,10 @@ func (c Delete) DeleteResource(resource string) revel.Result {
 }
 
 func (c Delete) DeleteCollectionResource(collection string, resource string) revel.Result {
-	accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"delete"); if accessErr != nil {
-		return c.RenderError(accessErr)
+	if revel.Config.StringDefault("require.jwt.deleteResource", "true") == "true" {
+		accessErr := c.HasAccess(c.Request.Header.Get("Authorization"),"delete"); if accessErr != nil {
+			return c.RenderError(accessErr)
+		}
 	}
 
 	resType := collection[0:2]

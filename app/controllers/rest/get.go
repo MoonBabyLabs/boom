@@ -46,11 +46,12 @@ func (c Get) Search() revel.Result {
 
 		return c.RenderJSON(cols)
 	}
-	c.Params.Query.Del("_order")
-	c.Params.Query.Del("_revisions")
-	c.Params.Query.Del("_limit")
-	c.Params.Query.Del("_offset")
+	c.Params.Del("_order")
+	c.Params.Del("_revisions")
+	c.Params.Del("_limit")
+	c.Params.Del("_offset")
 	c.Params.Del("version")
+	c.Params.Del("_limit");
 
 	if limit == "" {
 		limit = "20"
@@ -79,6 +80,7 @@ func (c Get) Search() revel.Result {
 		q.SearchQueries[qCount].Operator = "="
 		qCount++
 	}
+
 	kekDocs, err := kek.Doc{}.Find(q)
 
 	for kekDocId := range kekDocs {
